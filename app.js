@@ -297,9 +297,12 @@ class AppController {
     async init() {
         await this.db.init();
         this.setupEventListeners();
+        this.setupPopupListeners();
         await this.loadQuickNote();
         await this.renderThemes();
         this.updateStats();
+        // Vérifier les notes à lire au démarrage
+        await this.checkNotesALire();
     }
 
     setupEventListeners() {
@@ -384,7 +387,26 @@ class AppController {
         });
     }
 
-    navigateTo(screenId) {
+    setupPopupListeners() {
+        document.getElementById('popupBtnLire').addEventListener('click', () => {
+            document.getElementById('popupNotesALire').classList.remove('active');
+            this.navigateTo('screenToRead');
+        });
+        document.getElementById('popupBtnPlusTard').addEventListener('click', () => {
+            document.getElementById('popupNotesALire').classList.remove('active');
+        });
+    }
+
+    async checkNotesALire() {
+        const allNotes = await this.db.getAllNotes();
+        const notesToRead = SpacedRepetitionService.getNotesToRead(allNotes);
+        if (notesToRead.length > 0) {
+            document.getElementById('popupCount').textContent = notesToRead.length;
+            document.getElementById('popupNotesALire').classList.add('active');
+        }
+    }
+
+    // Navigation
         // Stopper le countdown si on quitte la note
         if (this.countdownInterval) {
             clearInterval(this.countdownInterval);
@@ -409,13 +431,18 @@ class AppController {
 
         // Update header title
         const titles = {
-            'screenThemes': 'Mes Thèmes',
-            'screenRandom': 'Notes Aléatoires',
-            'screenToRead': 'Notes à Lire',
+            'screenThemes': 'Etchnote',
+            'screenRandom': 'Aléatoire',
+            'screenToRead': 'À lire',
             'screenQuick': 'Note Rapide',
             'screenLinks': 'Liens'
         };
         document.getElementById('headerTitle').textContent = titles[screenId] || 'Etchnote';
+
+        // Masquer la barre de recherche sur Rapide et Liens
+        const searchContainer = document.getElementById('searchContainer');
+        const hideSearch = ['screenQuick', 'screenLinks'];
+        searchContainer.classList.toggle('hidden', hideSearch.includes(screenId));
 
         // Load content
         this.currentScreen = screenId;
@@ -474,6 +501,24 @@ class AppController {
     // THEMES / CATEGORIES
     // ===========================
 
+    // Icônes associées aux thèmes selon leur nom
+    getThemeIcons(nom) {
+        const n = nom.toLowerCase();
+        if (n.includes('histoire') || n.includes('hist')) return ['🏛️', '📜'];
+        if (n.includes('géo') || n.includes('geo')) return ['🌍', '🧭'];
+        if (n.includes('science') || n.includes('sci') || n.includes('bio')) return ['🔬', '⚗️'];
+        if (n.includes('math')) return ['📐', '🔢'];
+        if (n.includes('litt') || n.includes('livre')) return ['📖', '✍️'];
+        if (n.includes('art')) return ['🎨', '🖌️'];
+        if (n.includes('musique') || n.includes('music')) return ['🎵', '🎸'];
+        if (n.includes('sport') || n.includes('foot')) return ['⚽', '🏃'];
+        if (n.includes('langue') || n.includes('anglais') || n.includes('espag')) return ['🗣️', '📝'];
+        if (n.includes('philo')) return ['🤔', '📚'];
+        if (n.includes('info') || n.includes('code') || n.includes('prog')) return ['💻', '⚙️'];
+        if (n.includes('droit') || n.includes('loi')) return ['⚖️', '📋'];
+        return ['📚', '📝'];
+    }
+
     async renderThemes() {
         const categories = await this.db.getAllCategories();
         const container = document.getElementById('themesList');
@@ -491,8 +536,17 @@ class AppController {
             return;
         }
 
-        container.innerHTML = categories.map(cat => `
-            <div class="card theme-card" 
+        // Récupérer le nombre de notes par catégorie
+        const allNotes = await this.db.getAllNotes();
+
+        container.innerHTML = categories.map(cat => {
+            const [icon1, icon2] = this.getThemeIcons(cat.nom);
+            const noteCount = allNotes.filter(n => n.categorieId === cat.id).length;
+            const noteLabel = noteCount === 0 ? 'Aucune note'
+                : noteCount === 1 ? '1 Note'
+                : `${noteCount} Notes`;
+            return `
+            <div class="theme-card-wrap"
                  data-category-id="${cat.id}"
                  onclick="app.showCategoryNotes(${cat.id})"
                  ontouchstart="app.startLongPress(${cat.id}, event)"
@@ -501,9 +555,18 @@ class AppController {
                  onmousedown="app.startLongPress(${cat.id}, event)"
                  onmouseup="app.endLongPress()"
                  onmouseleave="app.cancelLongPress()">
-                <div class="card-title">${this.escapeHtml(cat.nom)}</div>
-            </div>
-        `).join('');
+                <div class="theme-card-inner">
+                    <div class="theme-card-text">
+                        <div class="theme-card-title">${this.escapeHtml(cat.nom)}</div>
+                        <div class="theme-card-sub">${noteLabel}</div>
+                    </div>
+                    <div class="theme-card-icons">
+                        <span class="theme-card-icon">${icon1}</span>
+                        <span class="theme-card-icon">${icon2}</span>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
     }
 
     async addCategory() {

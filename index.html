@@ -1,863 +1,825 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#C87654">
-    <title>Etchnote - Notes intelligentes</title>
-    <link rel="manifest" href="manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --terracotta: #C87654;
-            --terracotta-dark: #A65D42;
-            --terracotta-light: #D89378;
-            --cream: #F0EDE4;
-            --cream-dark: #E6E2D8;
-            --cream-card: #FDFCFA;
-            --text-dark: #1C1812;
-            --text-medium: #6B5B45;
-            --text-light: #A89880;
-            --border: #E0DBD0;
-            --shadow: rgba(80, 55, 30, 0.08);
-        }
-
-        body {
-            font-family: 'Lato', sans-serif;
-            background-color: var(--cream);
-            color: var(--text-dark);
-            min-height: 100vh;
-            padding-bottom: 100px;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Motif de vagues SVG en arrière-plan */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%23D8D2C4' stroke-width='1.5' opacity='0.6'%3E%3Cpath d='M-100 200 Q100 100 300 200 Q500 300 700 200 Q900 100 1100 200'/%3E%3Cpath d='M-100 280 Q100 180 300 280 Q500 380 700 280 Q900 180 1100 280'/%3E%3Cpath d='M-100 360 Q100 260 300 360 Q500 460 700 360 Q900 260 1100 360'/%3E%3Cpath d='M-100 440 Q100 340 300 440 Q500 540 700 440 Q900 340 1100 440'/%3E%3Cpath d='M-100 520 Q100 420 300 520 Q500 620 700 520 Q900 420 1100 520'/%3E%3Cpath d='M-100 600 Q100 500 300 600 Q500 700 700 600 Q900 500 1100 600'/%3E%3Cpath d='M-100 680 Q100 580 300 680 Q500 780 700 680 Q900 580 1100 680'/%3E%3Cpath d='M-100 760 Q100 660 300 760 Q500 860 700 760 Q900 660 1100 760'/%3E%3Cpath d='M-100 120 Q100 20 300 120 Q500 220 700 120 Q900 20 1100 120'/%3E%3Cpath d='M-100 40 Q100 -60 300 40 Q500 140 700 40 Q900 -60 1100 40'/%3E%3C/g%3E%3C/svg%3E");
-            background-size: 800px 800px;
-            background-repeat: repeat;
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.7;
-        }
-
-        /* Header */
-        .app-header {
-            background: var(--cream);
-            padding: 16px 20px 12px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: none;
-            position: relative;
-            z-index: 10;
-        }
-
-        .header-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .app-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 28px;
-            font-weight: 400;
-            color: var(--text-dark);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            letter-spacing: -0.3px;
-        }
-
-        .logo-img {
-            width: 44px;
-            height: 44px;
-            object-fit: contain;
-        }
-
-        .search-container {
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 13px 20px;
-            border-radius: 30px;
-            border: none;
-            background: rgba(255, 255, 255, 0.85);
-            font-size: 15px;
-            font-family: 'Lato', sans-serif;
-            color: var(--text-dark);
-            box-shadow: 0 2px 12px rgba(80, 55, 30, 0.06);
-        }
-
-        .search-input::placeholder {
-            color: var(--text-light);
-        }
-
-        .search-input:focus {
-            outline: none;
-            background: white;
-            box-shadow: 0 2px 16px rgba(80, 55, 30, 0.10);
-        }
-
-        .icon-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: none;
-            background: none;
-            color: var(--terracotta);
-            font-size: 22px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Main Content */
-        .app-content {
-            padding: 20px;
-            padding-bottom: 90px;
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-
-        .screen {
-            display: none;
-        }
-
-        .screen.active {
-            display: block;
-        }
-
-        /* Cards */
-        .card {
-            background: rgba(255, 255, 255, 0.90);
-            border-radius: 18px;
-            padding: 22px 24px;
-            margin-bottom: 14px;
-            box-shadow: 0 4px 20px rgba(80, 55, 30, 0.07), 0 1px 4px rgba(80, 55, 30, 0.04);
-            border: none;
-            transition: transform 0.15s;
-            backdrop-filter: blur(8px);
-        }
-
-        .card:active {
-            transform: scale(0.98);
-        }
-
-        .card-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 22px;
-            font-weight: 400;
-            margin-bottom: 4px;
-            color: var(--text-dark);
-            letter-spacing: -0.2px;
-        }
-
-        .card-subtitle {
-            font-size: 14px;
-            color: var(--text-medium);
-            font-style: italic;
-        }
-
-        /* Theme Cards */
-        .theme-card {
-            background: rgba(255, 255, 255, 0.90);
-            cursor: pointer;
-            border-radius: 18px;
-            box-shadow: 0 4px 20px rgba(80, 55, 30, 0.07);
-            border: none;
-            backdrop-filter: blur(8px);
-        }
-
-        .theme-card .card-title {
-            color: var(--text-dark);
-            font-family: 'Playfair Display', serif;
-            font-weight: 400;
-            font-size: 24px;
-        }
-
-        .theme-card .card-subtitle {
-            color: var(--terracotta);
-        }
-
-        /* Note Card */
-        .note-card {
-            border-left: 3px solid var(--terracotta-light);
-        }
-
-        .note-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            background: var(--cream-dark);
-            color: var(--terracotta-dark);
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-top: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .note-overdue {
-            border-left-color: #C0392B;
-        }
-
-        .note-overdue .note-badge {
-            background: #FDECEA;
-            color: #C0392B;
-            border-color: #F5B7B1;
-        }
-
-        /* Buttons */
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-family: 'Lato', sans-serif;
-        }
-
-        .btn-primary {
-            background: var(--terracotta);
-            color: white;
-        }
-
-        .btn-primary:active {
-            background: var(--terracotta-dark);
-            transform: scale(0.98);
-        }
-
-        .btn-secondary {
-            background: var(--cream-dark);
-            color: var(--text-dark);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:active {
-            background: var(--border);
-            transform: scale(0.98);
-        }
-
-        /* Form Inputs */
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-medium);
-            margin-bottom: 8px;
-        }
-
-        .form-input,
-        .form-textarea,
-        .form-select {
-            width: 100%;
-            padding: 12px;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            font-size: 15px;
-            font-family: 'Lato', sans-serif;
-            background: var(--cream-card);
-            color: var(--text-dark);
-            transition: border-color 0.2s;
-        }
-
-        .form-input:focus,
-        .form-textarea:focus,
-        .form-select:focus {
-            outline: none;
-            border-color: var(--terracotta);
-        }
-
-        .form-textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        /* Bottom Navigation */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(253, 252, 250, 0.95);
-            padding: 10px 0 22px 0;
-            display: flex;
-            justify-content: space-around;
-            border-radius: 24px 24px 0 0;
-            z-index: 1000;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 -4px 24px rgba(80, 55, 30, 0.06);
-        }
-
-        .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 6px 4px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            color: var(--text-light);
-            font-size: 11px;
-            font-family: 'Lato', sans-serif;
-            transition: all 0.2s;
-            border-radius: 12px;
-        }
-
-        .nav-item.active {
-            color: var(--terracotta);
-        }
-
-        .nav-item:active {
-            transform: scale(0.9);
-        }
-
-        .nav-icon {
-            font-size: 22px;
-            margin-bottom: 3px;
-        }
-
-        .nav-item.active .nav-icon {
-            transform: scale(1.1);
-        }
-
-        .nav-label {
-            font-weight: 600;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(44, 36, 23, 0.45);
-            z-index: 2000;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: var(--cream-card);
-            border-radius: 24px;
-            padding: 28px 24px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(80, 55, 30, 0.18);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        .modal-close {
-            font-size: 26px;
-            cursor: pointer;
-            color: var(--text-light);
-            border: none;
-            background: none;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-        }
-
-        .empty-icon {
-            font-size: 56px;
-            margin-bottom: 16px;
-            opacity: 0.35;
-        }
-
-        .empty-text {
-            font-family: 'Playfair Display', serif;
-            font-size: 18px;
-            color: var(--text-light);
-            margin-bottom: 24px;
-        }
-
-        /* FAB (Floating Action Button) */
-        .fab {
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--terracotta);
-            color: white;
-            border: none;
-            font-size: 30px;
-            font-weight: 300;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(200, 118, 84, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-        }
-
-        .fab:active {
-            transform: scale(0.93);
-            background: var(--terracotta-dark);
-        }
-
-        /* Note Content Display */
-        .note-content {
-            background: var(--cream-dark);
-            padding: 16px;
-            border-radius: 8px;
-            margin: 16px 0;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            line-height: 1.7;
-            font-size: 15px;
-            border: 1px solid var(--border);
-        }
-
-        /* Link Card */
-        .link-card {
-            border-left: 3px solid #7B9EC4;
-        }
-
-        .link-url {
-            color: #5B7FA8;
-            font-size: 13px;
-            word-break: break-all;
-            margin-top: 6px;
-        }
-
-        /* Stats */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.80);
-            border-radius: 18px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(80, 55, 30, 0.07);
-            border: none;
-            backdrop-filter: blur(8px);
-        }
-
-        .stat-value {
-            font-family: 'Playfair Display', serif;
-            font-size: 38px;
-            font-weight: 400;
-            color: var(--terracotta);
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: var(--text-light);
-            margin-top: 8px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-        }
-
-        /* Help */
-        .help-content {
-            background: var(--cream-dark);
-            padding: 16px;
-            border-radius: 8px;
-            margin-top: 16px;
-            border: 1px solid var(--border);
-        }
-
-        .help-content h3 {
-            font-family: 'Playfair Display', serif;
-            color: var(--terracotta);
-            margin-bottom: 12px;
-        }
-
-        .help-content ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .help-content li {
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
-            color: var(--text-medium);
-            font-size: 14px;
-        }
-
-        .help-content li:last-child {
-            border-bottom: none;
-        }
-
-        /* Mode test banner */
-        .test-banner {
-            background: #FFF3CD;
-            border: 1px solid #FFEAA7;
-            color: #856404;
-            font-size: 12px;
-            text-align: center;
-            padding: 6px 12px;
-            font-weight: 600;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#B8824A">
+<title>Etchnote</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --copper:#C8924A;
+  --copper-lt:#E8C870;
+  --copper-dk:#8B5A28;
+  --copper-grad:linear-gradient(135deg,#F2D880 0%,#D09040 18%,#A06020 40%,#C88040 62%,#E8C060 82%,#B07030 100%);
+  --copper-grad2:linear-gradient(180deg,#F0D488 0%,#C88840 30%,#8A5820 55%,#C48040 75%,#E8C060 100%);
+  --cream:#EAE0C8;
+  --cream-card:#F8F4EC;
+  --text-dk:#1A1208;
+  --text-md:#6B5535;
+  --text-lt:#A08860;
+  --shadow:0 8px 32px rgba(18,10,2,.38),0 3px 8px rgba(18,10,2,.2);
+}
+
+html,body{height:100%}
+
+body{
+  font-family:'Lato',sans-serif;
+  color:var(--text-dk);
+  min-height:100vh;
+  padding-bottom:100px;
+  overflow-x:hidden;
+  background:#EAE0C8;
+}
+
+/* ════════ FOND CARTE ASTRONOMIQUE FIXE ════════ */
+.bg-map{
+  position:fixed;inset:0;z-index:0;
+  background:#EAE0C8;overflow:hidden;
+}
+.bg-map svg{width:100%;height:100%}
+
+/* Gradient sombre qui recouvre la partie basse */
+.bg-overlay{
+  position:fixed;inset:0;z-index:1;
+  background:linear-gradient(180deg,
+    transparent 0%,
+    transparent 38%,
+    rgba(28,16,4,.28) 52%,
+    rgba(14,7,1,.82) 68%,
+    rgba(8,4,1,.97) 82%,
+    rgba(5,2,0,1) 100%);
+  pointer-events:none;
+}
+
+/* ════════ BANNIÈRE TEST ════════ */
+.test-banner{
+  position:relative;z-index:10;
+  background:linear-gradient(90deg,#5A3E18,#7A5828,#5A3E18);
+  color:#EFC870;
+  font-size:12px;font-weight:600;
+  text-align:center;padding:7px 12px;
+  letter-spacing:.3px;
+}
+
+/* ════════ HEADER ════════ */
+.app-header{
+  position:sticky;top:0;z-index:100;
+  background:linear-gradient(180deg,rgba(234,224,200,.88) 0%,rgba(234,224,200,.72) 100%);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  padding:14px 20px 12px;
+}
+.header-container{display:flex;flex-direction:column;gap:10px}
+.header-top{display:flex;justify-content:space-between;align-items:center}
+
+.app-title{
+  font-family:'Playfair Display',serif;
+  font-size:28px;font-weight:400;
+  color:var(--text-dk);
+  display:flex;align-items:center;gap:10px;
+}
+.logo-img{width:46px;height:46px;object-fit:contain}
+
+.icon-btn{
+  width:36px;height:36px;border-radius:50%;
+  border:1.5px solid var(--copper);background:transparent;
+  color:var(--copper);font-size:15px;font-weight:700;
+  font-family:'Playfair Display',serif;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+
+/* Search */
+.search-wrap{position:relative}
+.search-wrap.hidden{display:none}
+
+.search-input{
+  width:100%;padding:12px 46px 12px 20px;
+  border-radius:30px;border:none;
+  background:rgba(255,255,255,.80);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  font-size:14.5px;font-family:'Lato',sans-serif;
+  color:var(--text-dk);
+  box-shadow:0 2px 16px rgba(60,36,8,.1);
+}
+.search-input::placeholder{color:var(--text-lt)}
+.search-input:focus{outline:none;background:rgba(255,255,255,.95)}
+
+.search-icon{
+  position:absolute;right:16px;top:50%;transform:translateY(-50%);
+  font-size:17px;color:var(--text-lt);pointer-events:none;
+  filter:sepia(.8) saturate(.4) brightness(.75);
+}
+
+/* ════════ CONTENU ════════ */
+.app-content{
+  padding:14px 14px 90px;
+  max-width:800px;margin:0 auto;
+  position:relative;z-index:5;
+}
+
+.screen{display:none}
+.screen.active{display:block}
+
+/* ════════ STAT CARDS ════════ */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+
+.stat-card{
+  background:rgba(248,244,236,.95);
+  border-radius:16px;padding:14px 14px 12px;
+  box-shadow:var(--shadow);
+  border:1.5px solid rgba(200,146,74,.4);
+  position:relative;overflow:hidden;
+  backdrop-filter:blur(6px);
+}
+.stat-card::before{
+  content:'';position:absolute;inset:0;border-radius:16px;
+  background:linear-gradient(145deg,rgba(232,192,112,.1) 0%,transparent 60%);
+  pointer-events:none;
+}
+
+.stat-card-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+
+.stat-icon-main{
+  font-size:38px;line-height:1;
+  filter:sepia(.9) saturate(.35) brightness(.7) hue-rotate(-8deg);
+  opacity:.9;
+}
+.stat-icon-small{
+  font-size:22px;line-height:1;align-self:flex-end;
+  filter:sepia(.9) saturate(.35) brightness(.7) hue-rotate(-8deg);
+  opacity:.7;
+}
+
+.stat-right{text-align:right}
+.stat-value{
+  font-family:'Playfair Display',serif;
+  font-size:38px;font-weight:400;
+  color:var(--copper);line-height:1;
+}
+.stat-label{
+  font-size:10px;color:var(--text-lt);
+  font-weight:600;text-transform:uppercase;
+  letter-spacing:1.5px;margin-top:2px;
+}
+.stat-badge{
+  display:inline-block;
+  font-size:9px;color:var(--copper-dk);
+  font-weight:700;text-transform:uppercase;
+  letter-spacing:1px;padding:1px 5px;
+  border:1px solid rgba(200,146,74,.4);
+  border-radius:4px;margin-left:4px;vertical-align:middle;
+}
+.stat-bar{
+  height:3px;margin-top:10px;border-radius:2px;
+  background:linear-gradient(90deg,var(--copper-lt),var(--copper));
+}
+
+/* ════════ THEME CARDS (cadre cuivré épais + onglet gauche) ════════ */
+.theme-card-wrap{
+  background:var(--copper-grad);
+  border-radius:18px;
+  padding:3px 3px 3px 16px; /* 16px = onglet gauche cuivré */
+  margin-bottom:14px;
+  cursor:pointer;transition:transform .15s;
+  box-shadow:var(--shadow);
+}
+.theme-card-wrap:active{transform:scale(.985)}
+
+.theme-card-inner{
+  background:#F8F4EC;
+  border-radius:13px;
+  padding:16px 16px 16px 18px;
+  display:flex;justify-content:space-between;align-items:center;
+  min-height:84px;
+}
+
+.theme-card-text{flex:1;padding-right:10px}
+
+.theme-card-title{
+  font-family:'Playfair Display',serif;
+  font-size:24px;font-weight:400;
+  color:var(--text-dk);line-height:1.2;
+}
+.theme-card-sub{
+  font-size:13px;color:var(--copper);
+  font-weight:600;margin-top:4px;letter-spacing:.2px;
+}
+
+.theme-card-icons{
+  display:flex;gap:4px;align-items:center;flex-shrink:0;
+}
+.theme-card-icon{
+  font-size:34px;line-height:1;
+  filter:sepia(.85) saturate(.35) brightness(.75) hue-rotate(-8deg);
+  opacity:.8;
+}
+
+/* ════════ CARTES GÉNÉRIQUES ════════ */
+.card{
+  background:rgba(248,244,236,.95);
+  border-radius:16px;padding:20px;margin-bottom:14px;
+  box-shadow:var(--shadow);
+  border:1.5px solid rgba(200,146,74,.35);
+  position:relative;overflow:hidden;
+  backdrop-filter:blur(6px);
+}
+.card::before{
+  content:'';position:absolute;inset:0;border-radius:16px;
+  background:linear-gradient(145deg,rgba(232,192,112,.08) 0%,transparent 50%);
+  pointer-events:none;
+}
+.card:active{transform:scale(.985)}
+
+.card-title{
+  font-family:'Playfair Display',serif;
+  font-size:20px;font-weight:400;
+  color:var(--text-dk);margin-bottom:4px;
+}
+.card-subtitle{font-size:14px;color:var(--text-md);font-style:italic}
+
+/* Note cards */
+.note-card{border-left:4px solid var(--copper-lt)}
+.note-badge{
+  display:inline-block;padding:4px 12px;
+  background:linear-gradient(90deg,rgba(200,146,74,.14),rgba(200,146,74,.06));
+  color:var(--copper-dk);border-radius:12px;
+  font-size:12px;font-weight:600;margin-top:8px;
+  border:1px solid rgba(200,146,74,.3);
+}
+.note-overdue{border-left-color:#C0392B}
+.note-overdue .note-badge{background:#FDECEA;color:#C0392B;border-color:#F5B7B1}
+
+/* ════════ BOUTONS ════════ */
+.btn{
+  width:100%;padding:14px;border:none;border-radius:10px;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;
+  gap:8px;font-family:'Lato',sans-serif;
+}
+.btn-primary{background:var(--copper-grad);color:#1A1208}
+.btn-primary:active{filter:brightness(.9);transform:scale(.98)}
+.btn-secondary{background:rgba(237,232,220,.85);color:var(--text-dk);border:1.5px solid rgba(200,146,74,.3)}
+.btn-secondary:active{filter:brightness(.95);transform:scale(.98)}
+
+/* ════════ FORMULAIRES ════════ */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:14px;font-weight:600;color:var(--text-md);margin-bottom:8px}
+.form-input,.form-textarea,.form-select{
+  width:100%;padding:12px;
+  border:1.5px solid rgba(200,146,74,.3);
+  border-radius:8px;font-size:15px;
+  font-family:'Lato',sans-serif;
+  background:var(--cream-card);color:var(--text-dk);
+  transition:border-color .2s;
+}
+.form-input:focus,.form-textarea:focus,.form-select:focus{outline:none;border-color:var(--copper)}
+.form-textarea{min-height:120px;resize:vertical}
+
+/* ════════ NAV BAS ════════ */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(250,247,240,.97);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  padding:8px 0 20px;
+  display:flex;justify-content:space-around;
+  border-radius:22px 22px 0 0;
+  border-top:1.5px solid rgba(200,146,74,.2);
+  box-shadow:0 -6px 30px rgba(20,10,2,.18);
+  z-index:1000;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;padding:6px 4px;
+  cursor:pointer;border:none;background:none;
+  color:var(--text-lt);font-size:10.5px;
+  font-family:'Lato',sans-serif;
+  transition:all .2s;gap:2px;
+}
+.nav-item.active{color:var(--copper)}
+.nav-item:active{transform:scale(.9)}
+
+.nav-icon{
+  font-size:24px;line-height:1;
+  filter:sepia(.5) saturate(.4) brightness(.85);
+}
+.nav-item.active .nav-icon{
+  transform:scale(1.1);
+  filter:sepia(.7) saturate(.6) brightness(.75) hue-rotate(-5deg);
+}
+.nav-label{font-weight:600;font-size:10.5px}
+
+/* ════════ MODAL ════════ */
+.modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(16,8,2,.65);
+  z-index:2000;padding:20px;overflow-y:auto;
+}
+.modal.active{display:flex;align-items:center;justify-content:center}
+
+.modal-content{
+  background:var(--cream-card);border-radius:20px;
+  padding:26px 22px;max-width:480px;width:100%;
+  max-height:90vh;overflow-y:auto;
+  border:1.5px solid rgba(200,146,74,.45);
+  box-shadow:0 24px 70px rgba(16,8,0,.4);
+}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text-dk)}
+.modal-close{font-size:26px;cursor:pointer;color:var(--text-lt);border:none;background:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+
+/* ════════ POPUP NOTES À LIRE ════════ */
+.popup-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(12,6,1,.7);
+  z-index:3000;
+  align-items:center;justify-content:center;padding:24px;
+}
+.popup-overlay.active{display:flex}
+
+.popup-box{
+  position:relative;
+  border-radius:22px;
+  padding:3px;
+  background:var(--copper-grad);
+  box-shadow:0 24px 70px rgba(12,6,0,.5);
+  max-width:340px;width:100%;
+}
+.popup-inner{
+  background:var(--cream-card);
+  border-radius:20px;
+  padding:28px 22px;
+  text-align:center;
+}
+.popup-icon{font-size:56px;margin-bottom:12px;line-height:1;
+  filter:sepia(.8) saturate(.4) brightness(.75) hue-rotate(-5deg)}
+.popup-title{
+  font-family:'Playfair Display',serif;
+  font-size:23px;font-weight:700;
+  color:var(--text-dk);margin-bottom:8px;
+}
+.popup-count{font-size:14px;color:var(--text-md);margin-bottom:22px}
+.popup-num{
+  font-family:'Playfair Display',serif;
+  font-size:52px;color:var(--copper);
+  font-weight:400;line-height:1;
+  display:block;margin-bottom:4px;
+}
+.popup-btn-go{
+  width:100%;padding:14px;border:none;border-radius:12px;
+  font-size:15px;font-weight:700;cursor:pointer;
+  background:var(--copper-grad);color:#1A1208;
+  font-family:'Lato',sans-serif;margin-bottom:10px;
+  letter-spacing:.3px;
+}
+.popup-btn-skip{
+  width:100%;padding:11px;
+  border:1.5px solid rgba(200,146,74,.35);border-radius:12px;
+  font-size:14px;cursor:pointer;background:transparent;
+  color:var(--text-md);font-family:'Lato',sans-serif;
+}
+
+/* ════════ FAB ════════ */
+.fab{
+  position:fixed;bottom:100px;right:18px;
+  width:64px;height:64px;border-radius:50%;
+  background:var(--copper-grad2);
+  color:#1A1208;
+  border:2px solid rgba(240,210,120,.5);
+  font-size:28px;font-weight:300;cursor:pointer;
+  box-shadow:0 6px 22px rgba(130,72,10,.55),0 0 0 5px rgba(200,146,74,.12);
+  display:flex;align-items:center;justify-content:center;
+  z-index:999;font-family:'Lato',sans-serif;
+}
+.fab:active{transform:scale(.92);filter:brightness(.9)}
+
+/* ════════ CONTENU NOTE ════════ */
+.note-content{
+  background:rgba(237,232,220,.6);
+  padding:16px;border-radius:8px;
+  margin:16px 0;white-space:pre-wrap;
+  word-wrap:break-word;line-height:1.7;font-size:15px;
+  border:1px solid rgba(200,146,74,.2);
+}
+
+/* Links */
+.link-card{border-left:4px solid #7B9EC4}
+.link-url{color:#5B7FA8;font-size:13px;word-break:break-all;margin-top:6px}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px}
+.empty-icon{font-size:56px;margin-bottom:16px;opacity:.35}
+.empty-text{font-family:'Playfair Display',serif;font-size:18px;color:var(--text-lt);margin-bottom:24px}
+
+/* Help */
+.help-content{background:rgba(237,232,220,.7);padding:16px;border-radius:10px;margin-top:16px;border:1px solid rgba(200,146,74,.2)}
+.help-content h3{font-family:'Playfair Display',serif;color:var(--copper);margin-bottom:12px}
+.help-content ul{list-style:none;padding:0}
+.help-content li{padding:8px 0;border-bottom:1px solid rgba(200,146,74,.15);color:var(--text-md);font-size:14px}
+.help-content li:last-child{border-bottom:none}
+
+/* Countdown */
+#countdownContainer{margin-bottom:12px;padding:14px 16px;border-radius:12px;background:rgba(237,232,220,.7);border:1px solid rgba(200,146,74,.25);text-align:center}
+
+/* Search highlight */
+mark{background:rgba(232,192,112,.45);border-radius:3px;padding:0 2px;color:inherit}
+
+/* Countdown locked btn */
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+</style>
 </head>
 <body>
-    <!-- Bannière mode test -->
-    <div class="test-banner">⚠️ MODE TEST : heures → secondes | jours → minutes</div>
 
-    <!-- Header -->
-    <div class="app-header">
-        <div class="header-container">
-            <div class="header-top">
-                <div class="app-title">
-                    <img src="logo-etchnote.png" alt="Etchnote" class="logo-img"> 
-                    <span id="headerTitle">Etchnote</span>
-                </div>
-                <div class="header-actions">
-                    <button class="icon-btn" id="helpBtn">?</button>
-                </div>
-            </div>
-            <div class="search-container">
-                <input type="text" class="search-input" id="searchInput" placeholder="Chercher une note">
-            </div>
-        </div>
+<!-- ══ FOND CARTE ASTRONOMIQUE ══ -->
+<div class="bg-map">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice">
+  <rect width="390" height="844" fill="#EAE0C8"/>
+
+  <!-- Cercles concentriques principaux – centré à 200,280 -->
+  <g fill="none" stroke="#7A6030" stroke-width="0.55" opacity="0.32">
+    <circle cx="200" cy="280" r="400"/>
+    <circle cx="200" cy="280" r="290"/>
+    <circle cx="200" cy="280" r="205"/>
+    <circle cx="200" cy="280" r="140"/>
+    <circle cx="200" cy="280" r="88"/>
+    <circle cx="200" cy="280" r="46"/>
+    <circle cx="200" cy="280" r="18"/>
+    <!-- 16 lignes radiales -->
+    <line x1="200" y1="-120" x2="200" y2="680"/>
+    <line x1="-200" y1="280" x2="600" y2="280"/>
+    <line x1="-83"  y1="-3"  x2="483" y2="563"/>
+    <line x1="483"  y1="-3"  x2="-83" y2="563"/>
+    <line x1="-108" y1="73"  x2="508" y2="487"/>
+    <line x1="508"  y1="73"  x2="-108" y2="487"/>
+    <line x1="47"   y1="-140" x2="353" y2="700"/>
+    <line x1="353"  y1="-140" x2="47"  y2="700"/>
+    <!-- points cardinaux secondaires -->
+    <line x1="200"  y1="-120" x2="600" y2="280"/>
+    <line x1="600"  y1="280"  x2="200" y2="680"/>
+    <line x1="200"  y1="680"  x2="-200" y2="280"/>
+    <line x1="-200" y1="280"  x2="200" y2="-120"/>
+  </g>
+
+  <!-- Bagues intermédiaires légères -->
+  <g fill="none" stroke="#7A6030" stroke-width="0.35" opacity="0.18">
+    <circle cx="200" cy="280" r="58"/>
+    <circle cx="200" cy="280" r="115"/>
+    <circle cx="200" cy="280" r="170"/>
+    <circle cx="200" cy="280" r="245"/>
+    <circle cx="200" cy="280" r="345"/>
+  </g>
+
+  <!-- Petit astrolabe secondaire haut-gauche – centré à 78,155 -->
+  <g fill="none" stroke="#7A6030" stroke-width="0.5" opacity="0.28">
+    <circle cx="78" cy="155" r="78"/>
+    <circle cx="78" cy="155" r="52"/>
+    <circle cx="78" cy="155" r="28"/>
+    <circle cx="78" cy="155" r="10"/>
+    <line x1="78" y1="77"  x2="78"  y2="233"/>
+    <line x1="0"  y1="155" x2="156" y2="155"/>
+    <line x1="23" y1="100" x2="133" y2="210"/>
+    <line x1="133" y1="100" x2="23" y2="210"/>
+  </g>
+
+  <!-- Annotations décoratives haut-droite -->
+  <g fill="none" stroke="#7A6030" stroke-width="0.4" opacity="0.2">
+    <line x1="285" y1="58"  x2="375" y2="102"/>
+    <line x1="300" y1="68"  x2="372" y2="78"/>
+    <line x1="315" y1="82"  x2="385" y2="88"/>
+    <circle cx="330" cy="72" r="2.5" fill="#7A6030" opacity="0.3"/>
+    <line x1="340" y1="110" x2="388" y2="120"/>
+    <line x1="345" y1="126" x2="390" y2="132"/>
+  </g>
+
+  <!-- Tirets de graduation sur cercle externe -->
+  <g fill="none" stroke="#7A6030" stroke-width="0.6" opacity="0.22">
+    <line x1="200" y1="-122" x2="200" y2="-108"/>
+    <line x1="200" y1="660"  x2="200" y2="674"/>
+    <line x1="-202" y1="280" x2="-188" y2="280"/>
+    <line x1="588"  y1="280" x2="602"  y2="280"/>
+  </g>
+
+  <!-- ═══ TACHES D'ENCRE zone sombre (y > 560) ═══ -->
+  <g fill="#080402" opacity="0.72">
+    <!-- Grande tache principale -->
+    <ellipse cx="148" cy="722" rx="56" ry="34" transform="rotate(-18 148 722)"/>
+    <ellipse cx="155" cy="718" rx="36" ry="20" transform="rotate(-18 155 718)"/>
+    <ellipse cx="136" cy="734" rx="22" ry="14" transform="rotate(-25 136 734)"/>
+    <!-- Gouttelettes -->
+    <circle cx="88"  cy="698" r="7"/>
+    <circle cx="76"  cy="710" r="4"/>
+    <circle cx="210" cy="708" r="5"/>
+    <circle cx="224" cy="718" r="3"/>
+    <ellipse cx="192" cy="738" rx="14" ry="9" transform="rotate(20 192 738)"/>
+    <circle cx="165" cy="758" r="4"/>
+    <!-- Deuxième tache droite -->
+    <ellipse cx="312" cy="695" rx="25" ry="16"/>
+    <circle cx="294" cy="680" r="4"/>
+    <circle cx="336" cy="680" r="2.5"/>
+    <ellipse cx="330" cy="708" rx="10" ry="6" transform="rotate(12 330 708)"/>
+    <!-- Petits points dispersés -->
+    <circle cx="252" cy="665" r="5.5"/>
+    <circle cx="55"  cy="670" r="4"/>
+    <circle cx="358" cy="756" r="3.5"/>
+    <circle cx="178" cy="778" r="4.5"/>
+    <circle cx="118" cy="786" r="3"/>
+    <circle cx="280" cy="774" r="3"/>
+    <circle cx="62"  cy="750" r="2.5"/>
+  </g>
+</svg>
+</div>
+<div class="bg-overlay"></div>
+
+<!-- ══ BANNIÈRE TEST ══ -->
+<div class="test-banner">⚠️ MODE TEST ACTIVÉ : heures → secondes | jours → minutes</div>
+
+<!-- ══ HEADER ══ -->
+<div class="app-header">
+  <div class="header-container">
+    <div class="header-top">
+      <div class="app-title">
+        <img src="logo-etchnote.png" alt="" class="logo-img">
+        <span id="headerTitle">Etchnote</span>
+      </div>
+      <button class="icon-btn" id="helpBtn">i</button>
     </div>
-
-    <!-- Main Content -->
-    <div class="app-content">
-        <!-- Screen 1: Thèmes -->
-        <div class="screen active" id="screenThemes">
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-value" id="statCategories">0</div>
-                    <div class="stat-label">Thèmes</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="statNotes">0</div>
-                    <div class="stat-label">Notes</div>
-                </div>
-            </div>
-            <div id="themesList"></div>
-        </div>
-
-        <!-- Screen 2: Notes Aléatoires -->
-        <div class="screen" id="screenRandom">
-            <div id="randomNoteContent"></div>
-        </div>
-
-        <!-- Screen 3: Notes à Lire -->
-        <div class="screen" id="screenToRead">
-            <div id="toReadList"></div>
-        </div>
-
-        <!-- Screen 4: Note Rapide -->
-        <div class="screen" id="screenQuick">
-            <div class="card">
-                <div class="card-title">📋 Tableau blanc</div>
-                <div class="card-subtitle" style="margin-bottom: 16px;">Notez rapidement vos idées</div>
-                <textarea 
-                    class="form-textarea" 
-                    id="quickNoteText" 
-                    placeholder="Tapez vos notes ici...
-Sauvegarde automatique 💾"
-                    style="min-height: 400px;">
-                </textarea>
-                <div style="text-align: right; margin-top: 8px; color: var(--text-light); font-size: 12px;">
-                    <span id="quickNoteSaved">✓ Sauvegardé</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Screen 5: Liens -->
-        <div class="screen" id="screenLinks">
-            <div id="linksList"></div>
-        </div>
-
-        <!-- Screen: Category Notes -->
-        <div class="screen" id="screenCategoryNotes">
-            <div id="categoryNotesList"></div>
-        </div>
-
-        <!-- Screen: Search Results -->
-        <div class="screen" id="screenSearch">
-            <div id="searchResultsList"></div>
-        </div>
-
-        <!-- Screen: Note Detail -->
-        <div class="screen" id="screenNoteDetail">
-            <div class="card">
-                <div class="card-title" id="noteDetailTitle"></div>
-                <div class="card-subtitle" id="noteDetailCategory"></div>
-                <div class="note-content" id="noteDetailContent"></div>
-
-                <!-- Indicateur de temps restant -->
-                <div id="countdownContainer" style="display:none; margin-bottom: 12px; padding: 14px 16px; border-radius: 12px; background: var(--cream-dark); border: 1px solid var(--border); text-align: center;">
-                    <div style="font-size: 12px; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">⏳ Prochaine révision dans</div>
-                    <div id="countdownTimer" style="font-family: 'Playfair Display', serif; font-size: 28px; color: var(--terracotta); font-weight: 400;"></div>
-                    <div style="font-size: 12px; color: var(--text-light); margin-top: 4px;" id="countdownLevel"></div>
-                </div>
-
-                <button class="btn btn-primary" id="markAsReadBtn">
-                    ✓ Relu / Compris
-                </button>
-                <button class="btn btn-secondary" style="margin-top: 8px;" id="editNoteFromDetailBtn">
-                    ✏️ Modifier
-                </button>
-                <button class="btn btn-secondary" style="margin-top: 8px;" id="backFromNoteBtn">
-                    ← Retour
-                </button>
-            </div>
-        </div>
+    <div class="search-wrap" id="searchContainer">
+      <input type="text" class="search-input" id="searchInput" placeholder="Chercher une note">
+      <span class="search-icon">🔍</span>
     </div>
+  </div>
+</div>
 
-    <!-- FAB Button -->
-    <button class="fab" id="fabBtn">+</button>
+<!-- ══ CONTENU ══ -->
+<div class="app-content">
 
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav">
-        <button class="nav-item active" data-screen="screenThemes">
-            <div class="nav-icon">📚</div>
-            <div>Thèmes</div>
-        </button>
-        <button class="nav-item" data-screen="screenRandom">
-            <div class="nav-icon">🎲</div>
-            <div>Aléatoire</div>
-        </button>
-        <button class="nav-item" data-screen="screenToRead">
-            <div class="nav-icon">📖</div>
-            <div>À lire</div>
-        </button>
-        <button class="nav-item" data-screen="screenQuick">
-            <div class="nav-icon">⚡</div>
-            <div>Rapide</div>
-        </button>
-        <button class="nav-item" data-screen="screenLinks">
-            <div class="nav-icon">🔗</div>
-            <div>Liens</div>
-        </button>
-    </nav>
-
-    <!-- Modal: Add Category -->
-    <div class="modal" id="modalAddCategory">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">➕ Nouveau thème</div>
-                <button class="modal-close" onclick="closeModal('modalAddCategory')">×</button>
-            </div>
-            <form id="formAddCategory">
-                <div class="form-group">
-                    <label class="form-label">Nom du thème</label>
-                    <input type="text" class="form-input" id="categoryName" placeholder="Ex: Histoire, Art, Sport..." required>
-                </div>
-                <button type="submit" class="btn btn-primary">Créer</button>
-            </form>
+  <!-- Thèmes -->
+  <div class="screen active" id="screenThemes">
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-card-row">
+          <span class="stat-icon-main">📖</span>
+          <div class="stat-right">
+            <div class="stat-value" id="statCategories">0</div>
+            <div class="stat-label">Thèmes</div>
+          </div>
         </div>
-    </div>
-
-    <!-- Modal: Add Note -->
-    <div class="modal" id="modalAddNote">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">➕ Nouvelle note</div>
-                <button class="modal-close" onclick="closeModal('modalAddNote')">×</button>
-            </div>
-            <form id="formAddNote">
-                <div class="form-group">
-                    <label class="form-label">Catégorie</label>
-                    <select class="form-select" id="noteCategorySelect" required>
-                        <option value="">Sélectionnez une catégorie</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Titre</label>
-                    <input type="text" class="form-input" id="noteTitle" placeholder="Titre de la note" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Contenu</label>
-                    <textarea class="form-textarea" id="noteContent" placeholder="Écrivez votre note ici..." required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Créer</button>
-            </form>
+        <span class="stat-icon-small" style="float:right;margin-top:-8px">🌍</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-row">
+          <span class="stat-icon-main">🪶</span>
+          <div class="stat-right">
+            <div class="stat-value" id="statNotes">0</div>
+            <div class="stat-label">Notes <span class="stat-badge">Récent</span></div>
+          </div>
         </div>
+        <div class="stat-bar"></div>
+      </div>
     </div>
+    <div id="themesList"></div>
+  </div>
 
-    <!-- Modal: Edit Note -->
-    <div class="modal" id="modalEditNote">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">✏️ Modifier la note</div>
-                <button class="modal-close" onclick="closeModal('modalEditNote')">×</button>
-            </div>
-            <form id="formEditNote">
-                <input type="hidden" id="editNoteId">
-                <div class="form-group">
-                    <label class="form-label">Catégorie</label>
-                    <select class="form-select" id="editNoteCategorySelect" required>
-                        <option value="">Sélectionnez une catégorie</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Titre</label>
-                    <input type="text" class="form-input" id="editNoteTitle" placeholder="Titre de la note" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Contenu</label>
-                    <textarea class="form-textarea" id="editNoteContent" placeholder="Écrivez votre note ici..." required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Modifier</button>
-                <button type="button" class="btn btn-secondary" style="margin-top: 8px; background: #EF4444; color: white;" id="deleteNoteBtn">
-                    🗑️ Supprimer
-                </button>
-            </form>
-        </div>
+  <!-- Aléatoire -->
+  <div class="screen" id="screenRandom"><div id="randomNoteContent"></div></div>
+
+  <!-- À lire -->
+  <div class="screen" id="screenToRead"><div id="toReadList"></div></div>
+
+  <!-- Rapide (pas de recherche) -->
+  <div class="screen" id="screenQuick">
+    <div class="card">
+      <div class="card-title">📋 Tableau blanc</div>
+      <div class="card-subtitle" style="margin-bottom:16px">Notez rapidement vos idées</div>
+      <textarea class="form-textarea" id="quickNoteText"
+        placeholder="Tapez vos notes ici...&#10;Sauvegarde automatique 💾"
+        style="min-height:420px"></textarea>
+      <div style="text-align:right;margin-top:8px;color:var(--text-lt);font-size:12px">
+        <span id="quickNoteSaved">✓ Sauvegardé</span>
+      </div>
     </div>
+  </div>
 
-    <!-- Modal: Add Link -->
-    <div class="modal" id="modalAddLink">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">➕ Nouveau lien</div>
-                <button class="modal-close" onclick="closeModal('modalAddLink')">×</button>
-            </div>
-            <form id="formAddLink">
-                <div class="form-group">
-                    <label class="form-label">Titre</label>
-                    <input type="text" class="form-input" id="linkTitle" placeholder="Nom du lien" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">URL</label>
-                    <input type="url" class="form-input" id="linkUrl" placeholder="https://..." required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Note (optionnel)</label>
-                    <textarea class="form-textarea" id="linkNote" placeholder="Ajouter une description..."></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Créer</button>
-            </form>
-        </div>
+  <!-- Liens (pas de recherche) -->
+  <div class="screen" id="screenLinks"><div id="linksList"></div></div>
+
+  <!-- Notes d'un thème -->
+  <div class="screen" id="screenCategoryNotes"><div id="categoryNotesList"></div></div>
+
+  <!-- Résultats recherche -->
+  <div class="screen" id="screenSearch"><div id="searchResultsList"></div></div>
+
+  <!-- Détail note -->
+  <div class="screen" id="screenNoteDetail">
+    <div class="card">
+      <div class="card-title" id="noteDetailTitle"></div>
+      <div class="card-subtitle" id="noteDetailCategory"></div>
+      <div class="note-content" id="noteDetailContent"></div>
+      <div id="countdownContainer" style="display:none">
+        <div style="font-size:12px;color:var(--text-lt);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">⏳ Prochaine révision dans</div>
+        <div id="countdownTimer" style="font-family:'Playfair Display',serif;font-size:32px;color:var(--copper);font-weight:400"></div>
+        <div style="font-size:12px;color:var(--text-lt);margin-top:4px" id="countdownLevel"></div>
+      </div>
+      <button class="btn btn-primary" id="markAsReadBtn">✓ Relu / Compris</button>
+      <button class="btn btn-secondary" style="margin-top:8px" id="editNoteFromDetailBtn">✏️ Modifier</button>
+      <button class="btn btn-secondary" style="margin-top:8px" id="backFromNoteBtn">← Retour</button>
     </div>
+  </div>
 
-    <!-- Modal: Edit Category -->
-    <div class="modal" id="modalEditCategory">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">✏️ Modifier le thème</div>
-                <button class="modal-close" onclick="closeModal('modalEditCategory')">×</button>
-            </div>
-            <form id="formEditCategory">
-                <input type="hidden" id="editCategoryId">
-                <div class="form-group">
-                    <label class="form-label">Nom du thème</label>
-                    <input type="text" class="form-input" id="editCategoryName" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Modifier</button>
-                <button type="button" class="btn btn-secondary" style="margin-top: 8px; background: #EF4444; color: white;" id="deleteCategoryBtn">
-                    🗑️ Supprimer
-                </button>
-            </form>
-        </div>
+</div><!-- /app-content -->
+
+<!-- FAB -->
+<button class="fab" id="fabBtn">+</button>
+
+<!-- Nav bas -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-screen="screenThemes">
+    <div class="nav-icon">📚</div><div class="nav-label">Thèmes</div>
+  </button>
+  <button class="nav-item" data-screen="screenRandom">
+    <div class="nav-icon">🎲</div><div class="nav-label">Aléatoire</div>
+  </button>
+  <button class="nav-item" data-screen="screenToRead">
+    <div class="nav-icon">📖</div><div class="nav-label">À lire</div>
+  </button>
+  <button class="nav-item" data-screen="screenQuick">
+    <div class="nav-icon">⚡</div><div class="nav-label">Rapide</div>
+  </button>
+  <button class="nav-item" data-screen="screenLinks">
+    <div class="nav-icon">🔗</div><div class="nav-label">Liens</div>
+  </button>
+</nav>
+
+<!-- ══ POPUP NOTES À LIRE ══ -->
+<div class="popup-overlay" id="popupNotesALire">
+  <div class="popup-box">
+    <div class="popup-inner">
+      <div class="popup-icon">📖</div>
+      <div class="popup-title">Notes à réviser !</div>
+      <div class="popup-count">
+        <span class="popup-num" id="popupCount">0</span>
+        note(s) attendent votre révision
+      </div>
+      <button class="popup-btn-go" id="popupBtnLire">Réviser maintenant</button>
+      <button class="popup-btn-skip" id="popupBtnPlusTard">Plus tard</button>
     </div>
+  </div>
+</div>
 
-    <!-- Modal: Help -->
-    <div class="modal" id="modalHelp">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">❓ Aide</div>
-                <button class="modal-close" onclick="closeModal('modalHelp')">×</button>
-            </div>
-            <div class="help-content">
-                <h3>🧠 Répétition espacée</h3>
-                <p style="margin-bottom: 12px;">Etchnote utilise un algorithme de répétition espacée pour optimiser votre mémorisation.</p>
-                <p style="margin-bottom: 8px; color: #856404; font-weight: 600; font-size: 13px;">⚠️ MODE TEST actif — intervalles raccourcis</p>
-                <ul>
-                    <li><strong>Niveau 1:</strong> 24 sec <em style="color:#9B8B75">(= 24h en prod)</em></li>
-                    <li><strong>Niveau 2:</strong> 48 sec <em style="color:#9B8B75">(= 48h en prod)</em></li>
-                    <li><strong>Niveau 3:</strong> 7 min <em style="color:#9B8B75">(= 7 jours en prod)</em></li>
-                    <li><strong>Niveau 4:</strong> 15 min <em style="color:#9B8B75">(= 15 jours en prod)</em></li>
-                    <li><strong>Niveau 5:</strong> 30 min <em style="color:#9B8B75">(= 1 mois en prod)</em></li>
-                    <li><strong>Niveau 6:</strong> 60 min <em style="color:#9B8B75">(= 2 mois en prod)</em></li>
-                    <li><strong>Niveau 7:</strong> 120 min <em style="color:#9B8B75">(= 4 mois en prod)</em></li>
-                    <li><strong>Niveau 8:</strong> 180 min <em style="color:#9B8B75">(= 6 mois en prod)</em></li>
-                </ul>
-            </div>
-            <div class="help-content" style="margin-top: 16px;">
-                <h3>📱 Navigation</h3>
-                <ul>
-                    <li><strong>Thèmes:</strong> Vos catégories de notes</li>
-                    <li><strong>Aléatoire:</strong> Note surprise</li>
-                    <li><strong>À lire:</strong> Notes à réviser</li>
-                    <li><strong>Rapide:</strong> Tableau blanc</li>
-                    <li><strong>Liens:</strong> Vos ressources web</li>
-                </ul>
-            </div>
-        </div>
+<!-- Modal: Nouveau thème -->
+<div class="modal" id="modalAddCategory">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">➕ Nouveau thème</div>
+      <button class="modal-close" onclick="closeModal('modalAddCategory')">×</button>
     </div>
+    <form id="formAddCategory">
+      <div class="form-group">
+        <label class="form-label">Nom du thème</label>
+        <input type="text" class="form-input" id="categoryName" placeholder="Ex: Histoire, Art, Sport..." required>
+      </div>
+      <button type="submit" class="btn btn-primary">Créer</button>
+    </form>
+  </div>
+</div>
 
-    <script src="app.js"></script>
+<!-- Modal: Nouvelle note -->
+<div class="modal" id="modalAddNote">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">➕ Nouvelle note</div>
+      <button class="modal-close" onclick="closeModal('modalAddNote')">×</button>
+    </div>
+    <form id="formAddNote">
+      <div class="form-group">
+        <label class="form-label">Catégorie</label>
+        <select class="form-select" id="noteCategorySelect" required>
+          <option value="">Sélectionnez une catégorie</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Titre</label>
+        <input type="text" class="form-input" id="noteTitle" placeholder="Titre de la note" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contenu</label>
+        <textarea class="form-textarea" id="noteContent" placeholder="Écrivez votre note ici..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Créer</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Modifier note -->
+<div class="modal" id="modalEditNote">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Modifier la note</div>
+      <button class="modal-close" onclick="closeModal('modalEditNote')">×</button>
+    </div>
+    <form id="formEditNote">
+      <input type="hidden" id="editNoteId">
+      <div class="form-group">
+        <label class="form-label">Catégorie</label>
+        <select class="form-select" id="editNoteCategorySelect" required>
+          <option value="">Sélectionnez une catégorie</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Titre</label>
+        <input type="text" class="form-input" id="editNoteTitle" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contenu</label>
+        <textarea class="form-textarea" id="editNoteContent" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Modifier</button>
+      <button type="button" class="btn btn-secondary" style="margin-top:8px;background:#EF4444;color:white" id="deleteNoteBtn">🗑️ Supprimer</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Nouveau lien -->
+<div class="modal" id="modalAddLink">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">➕ Nouveau lien</div>
+      <button class="modal-close" onclick="closeModal('modalAddLink')">×</button>
+    </div>
+    <form id="formAddLink">
+      <div class="form-group">
+        <label class="form-label">Titre</label>
+        <input type="text" class="form-input" id="linkTitle" placeholder="Nom du lien" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL</label>
+        <input type="url" class="form-input" id="linkUrl" placeholder="https://..." required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note (optionnel)</label>
+        <textarea class="form-textarea" id="linkNote" placeholder="Ajouter une description..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Créer</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Modifier thème -->
+<div class="modal" id="modalEditCategory">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Modifier le thème</div>
+      <button class="modal-close" onclick="closeModal('modalEditCategory')">×</button>
+    </div>
+    <form id="formEditCategory">
+      <input type="hidden" id="editCategoryId">
+      <div class="form-group">
+        <label class="form-label">Nom du thème</label>
+        <input type="text" class="form-input" id="editCategoryName" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Modifier</button>
+      <button type="button" class="btn btn-secondary" style="margin-top:8px;background:#EF4444;color:white" id="deleteCategoryBtn">🗑️ Supprimer</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Aide -->
+<div class="modal" id="modalHelp">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Aide</div>
+      <button class="modal-close" onclick="closeModal('modalHelp')">×</button>
+    </div>
+    <div class="help-content">
+      <h3>🧠 Répétition espacée</h3>
+      <p style="margin-bottom:12px">Etchnote optimise votre mémorisation.</p>
+      <p style="margin-bottom:8px;color:#856404;font-weight:600;font-size:13px">⚠️ MODE TEST actif</p>
+      <ul>
+        <li><strong>Niveau 1 :</strong> 24 sec <em style="color:var(--text-lt)">(= 24h)</em></li>
+        <li><strong>Niveau 2 :</strong> 48 sec <em style="color:var(--text-lt)">(= 48h)</em></li>
+        <li><strong>Niveau 3 :</strong> 7 min <em style="color:var(--text-lt)">(= 7 jours)</em></li>
+        <li><strong>Niveau 4 :</strong> 15 min <em style="color:var(--text-lt)">(= 15 jours)</em></li>
+        <li><strong>Niveau 5 :</strong> 30 min <em style="color:var(--text-lt)">(= 1 mois)</em></li>
+        <li><strong>Niveau 6 :</strong> 60 min <em style="color:var(--text-lt)">(= 2 mois)</em></li>
+        <li><strong>Niveau 7 :</strong> 120 min <em style="color:var(--text-lt)">(= 4 mois)</em></li>
+        <li><strong>Niveau 8 :</strong> 180 min <em style="color:var(--text-lt)">(= 6 mois)</em></li>
+      </ul>
+    </div>
+    <div class="help-content">
+      <h3>📱 Navigation</h3>
+      <ul>
+        <li><strong>Thèmes :</strong> Vos catégories de notes</li>
+        <li><strong>Aléatoire :</strong> Note surprise</li>
+        <li><strong>À lire :</strong> Notes à réviser</li>
+        <li><strong>Rapide :</strong> Tableau blanc</li>
+        <li><strong>Liens :</strong> Vos ressources web</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
