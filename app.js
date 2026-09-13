@@ -501,22 +501,163 @@ class AppController {
     // THEMES / CATEGORIES
     // ===========================
 
-    // Icônes associées aux thèmes selon leur nom
-    getThemeIcons(nom) {
+    // ── SVG ICONS (style gravure cuivré) ──────────────────────────
+    svgColumn() {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 72" fill="none" width="46" height="66">
+          <rect x="5" y="4" width="40" height="5" rx="1" stroke="#C8924A" stroke-width="1.1" fill="rgba(200,146,74,0.06)"/>
+          <path d="M9,9 Q25,14 41,9" stroke="#C8924A" stroke-width="1" fill="none"/>
+          <line x1="9" y1="9" x2="41" y2="9" stroke="#C8924A" stroke-width="0.7"/>
+          <line x1="13" y1="13" x2="37" y2="13" stroke="#C8924A" stroke-width="0.7"/>
+          <line x1="13" y1="15" x2="37" y2="15" stroke="#C8924A" stroke-width="0.6"/>
+          <rect x="13" y="15" width="24" height="46" stroke="#C8924A" stroke-width="1.2" fill="rgba(200,146,74,0.04)"/>
+          <line x1="17" y1="15" x2="17" y2="61" stroke="#C8924A" stroke-width="0.55"/>
+          <line x1="20" y1="15" x2="20" y2="61" stroke="#C8924A" stroke-width="0.55"/>
+          <line x1="23" y1="15" x2="23" y2="61" stroke="#C8924A" stroke-width="0.55"/>
+          <line x1="25" y1="15" x2="25" y2="61" stroke="#C8924A" stroke-width="0.55"/>
+          <line x1="27" y1="15" x2="27" y2="61" stroke="#C8924A" stroke-width="0.55"/>
+          <line x1="30" y1="15" x2="30" y2="61" stroke="#C8924A" stroke-width="0.55"/>
+          <line x1="33" y1="15" x2="33" y2="61" stroke="#C8924A" stroke-width="0.55"/>
+          <rect x="10" y="61" width="30" height="3" stroke="#C8924A" stroke-width="1.0" fill="rgba(200,146,74,0.06)"/>
+          <rect x="5" y="64" width="40" height="4" rx="0.5" stroke="#C8924A" stroke-width="1.1" fill="rgba(200,146,74,0.06)"/>
+        </svg>`;
+    }
+    svgScroll() {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 66" fill="none" width="46" height="60">
+          <ellipse cx="26" cy="8" rx="19" ry="7" stroke="#C8924A" stroke-width="1.1" fill="rgba(200,146,74,0.08)"/>
+          <ellipse cx="26" cy="8" rx="13" ry="4" stroke="#C8924A" stroke-width="0.7" fill="rgba(200,146,74,0.05)"/>
+          <rect x="7" y="8" width="38" height="50" fill="rgba(200,146,74,0.04)"/>
+          <line x1="7" y1="8" x2="7" y2="58" stroke="#C8924A" stroke-width="1.1"/>
+          <line x1="45" y1="8" x2="45" y2="58" stroke="#C8924A" stroke-width="1.1"/>
+          <line x1="13" y1="18" x2="39" y2="18" stroke="#C8924A" stroke-width="0.8"/>
+          <line x1="13" y1="24" x2="39" y2="24" stroke="#C8924A" stroke-width="0.8"/>
+          <line x1="13" y1="30" x2="39" y2="30" stroke="#C8924A" stroke-width="0.8"/>
+          <line x1="13" y1="36" x2="39" y2="36" stroke="#C8924A" stroke-width="0.8"/>
+          <line x1="13" y1="42" x2="36" y2="42" stroke="#C8924A" stroke-width="0.8"/>
+          <line x1="13" y1="48" x2="32" y2="48" stroke="#C8924A" stroke-width="0.8"/>
+          <ellipse cx="26" cy="58" rx="19" ry="7" stroke="#C8924A" stroke-width="1.1" fill="rgba(200,146,74,0.09)"/>
+          <ellipse cx="26" cy="58" rx="13" ry="4" stroke="#C8924A" stroke-width="0.7" fill="rgba(200,146,74,0.05)"/>
+        </svg>`;
+    }
+    svgGlobe() {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 66" fill="none" width="48" height="60">
+          <circle cx="27" cy="25" r="22" stroke="#C8924A" stroke-width="1.2" fill="rgba(200,146,74,0.04)"/>
+          <ellipse cx="27" cy="25" rx="8" ry="22" stroke="#C8924A" stroke-width="0.85"/>
+          <path d="M27,3 Q10,14 10,25 Q10,36 27,47" stroke="#C8924A" stroke-width="0.7" fill="none"/>
+          <path d="M27,3 Q44,14 44,25 Q44,36 27,47" stroke="#C8924A" stroke-width="0.7" fill="none"/>
+          <path d="M5,17 Q27,13 49,17" stroke="#C8924A" stroke-width="0.75" fill="none"/>
+          <line x1="5" y1="25" x2="49" y2="25" stroke="#C8924A" stroke-width="0.75"/>
+          <path d="M5,33 Q27,37 49,33" stroke="#C8924A" stroke-width="0.75" fill="none"/>
+          <line x1="27" y1="3" x2="27" y2="47" stroke="#C8924A" stroke-width="0.75"/>
+          <path d="M19,47 Q23,55 27,57" stroke="#C8924A" stroke-width="1.1" fill="none"/>
+          <path d="M35,47 Q31,55 27,57" stroke="#C8924A" stroke-width="1.1" fill="none"/>
+          <line x1="27" y1="57" x2="27" y2="62" stroke="#C8924A" stroke-width="1.2"/>
+          <ellipse cx="27" cy="63" rx="9" ry="2.5" stroke="#C8924A" stroke-width="1.0" fill="rgba(200,146,74,0.07)"/>
+        </svg>`;
+    }
+    svgSextant() {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 66" fill="none" width="48" height="60">
+          <path d="M8,60 L8,14 Q8,8 14,8 L50,60 Z" stroke="#C8924A" stroke-width="1.3" fill="rgba(200,146,74,0.04)"/>
+          <path d="M14,56 Q14,18 46,56" stroke="#C8924A" stroke-width="0.9" fill="none"/>
+          <line x1="8" y1="60" x2="34" y2="16" stroke="#C8924A" stroke-width="1.3" stroke-linecap="round"/>
+          <rect x="8" y="8" width="26" height="9" rx="3" stroke="#C8924A" stroke-width="1.0" fill="rgba(200,146,74,0.07)"/>
+          <line x1="15" y1="54" x2="18" y2="50" stroke="#C8924A" stroke-width="0.85"/>
+          <line x1="22" y1="42" x2="26" y2="39" stroke="#C8924A" stroke-width="0.85"/>
+          <line x1="31" y1="30" x2="35" y2="28" stroke="#C8924A" stroke-width="0.85"/>
+          <line x1="42" y1="56" x2="46" y2="52" stroke="#C8924A" stroke-width="0.85"/>
+          <rect x="5" y="58" width="6" height="9" rx="2" stroke="#C8924A" stroke-width="1.0" fill="rgba(200,146,74,0.07)"/>
+        </svg>`;
+    }
+    svgFlask() {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 64" fill="none" width="42" height="58">
+          <path d="M18,4 L18,24 L6,54 Q4,60 10,62 L38,62 Q44,60 42,54 L30,24 L30,4 Z" stroke="#C8924A" stroke-width="1.2" fill="rgba(200,146,74,0.04)"/>
+          <line x1="14" y1="4" x2="34" y2="4" stroke="#C8924A" stroke-width="1.2"/>
+          <line x1="14" y1="8" x2="34" y2="8" stroke="#C8924A" stroke-width="0.7"/>
+          <path d="M8,50 Q14,46 24,47 Q34,48 40,50 Q40,58 24,58 Q8,58 8,50 Z" stroke="#C8924A" stroke-width="0.8" fill="rgba(200,146,74,0.15)"/>
+          <circle cx="16" cy="53" r="2" fill="rgba(200,146,74,0.4)"/>
+          <circle cx="30" cy="56" r="1.5" fill="rgba(200,146,74,0.4)"/>
+        </svg>`;
+    }
+    svgCompass() {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 64" fill="none" width="44" height="58">
+          <circle cx="25" cy="14" r="6" stroke="#C8924A" stroke-width="1.1" fill="rgba(200,146,74,0.07)"/>
+          <circle cx="25" cy="14" r="2" stroke="#C8924A" stroke-width="1.0" fill="rgba(200,146,74,0.2)"/>
+          <line x1="21" y1="19" x2="10" y2="58" stroke="#C8924A" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="29" y1="19" x2="40" y2="58" stroke="#C8924A" stroke-width="1.3" stroke-linecap="round"/>
+          <path d="M8,58 Q25,54 42,58" stroke="#C8924A" stroke-width="1.1" fill="none"/>
+          <line x1="14" y1="42" x2="36" y2="42" stroke="#C8924A" stroke-width="0.8"/>
+        </svg>`;
+    }
+    svgNote() {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 64" fill="none" width="44" height="58">
+          <ellipse cx="14" cy="56" rx="10" ry="6" stroke="#C8924A" stroke-width="1.1" fill="rgba(200,146,74,0.08)"/>
+          <line x1="24" y1="56" x2="24" y2="8" stroke="#C8924A" stroke-width="1.3"/>
+          <line x1="24" y1="8" x2="44" y2="14" stroke="#C8924A" stroke-width="1.1"/>
+          <line x1="44" y1="14" x2="44" y2="36" stroke="#C8924A" stroke-width="1.1"/>
+          <ellipse cx="34" cy="36" rx="10" ry="6" stroke="#C8924A" stroke-width="1.1" fill="rgba(200,146,74,0.08)"/>
+          <line x1="28" y1="18" x2="44" y2="22" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="28" y1="26" x2="44" y2="30" stroke="#C8924A" stroke-width="0.75"/>
+        </svg>`;
+    }
+    svgBook() {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 58" fill="none" width="46" height="52">
+          <path d="M26,6 C18,4 8,7 4,11 L6,50 C11,46 18,45 26,47 Z" stroke="#C8924A" stroke-width="1.2" fill="rgba(200,146,74,0.05)"/>
+          <path d="M26,6 C34,4 44,7 48,11 L46,50 C41,46 34,45 26,47 Z" stroke="#C8924A" stroke-width="1.2" fill="rgba(200,146,74,0.05)"/>
+          <path d="M26,6 Q27,26 26,47" stroke="#9A6820" stroke-width="2.0" stroke-linecap="round"/>
+          <line x1="9" y1="18" x2="23" y2="16" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="9" y1="24" x2="23" y2="22" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="9" y1="30" x2="23" y2="28" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="9" y1="36" x2="23" y2="34" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="29" y1="16" x2="43" y2="18" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="29" y1="22" x2="43" y2="24" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="29" y1="28" x2="43" y2="30" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="29" y1="34" x2="43" y2="36" stroke="#C8924A" stroke-width="0.75"/>
+        </svg>`;
+    }
+    svgQuill() {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 62" fill="none" width="42" height="56">
+          <path d="M24,56 C26,46 36,32 42,18 C46,8 40,3 34,3 C28,3 24,7 22,13" stroke="#C8924A" stroke-width="1.2" fill="none"/>
+          <path d="M24,56 C22,48 14,36 8,22 C4,12 9,4 16,3 C22,2 26,6 24,13" stroke="#C8924A" stroke-width="1.2" fill="none"/>
+          <path d="M24,56 C26,46 36,32 42,18 C46,8 40,3 34,3 C22,3 18,4 16,3 C9,4 4,12 8,22 C14,36 22,48 24,56 Z" fill="rgba(200,146,74,0.06)"/>
+          <path d="M24,56 L22,28 L20,10" stroke="#9A6820" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="22" y1="16" x2="33" y2="11" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="22" y1="23" x2="36" y2="18" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="22" y1="30" x2="37" y2="26" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="22" y1="37" x2="35" y2="34" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="22" y1="44" x2="32" y2="42" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="22" y1="16" x2="13" y2="12" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="22" y1="23" x2="10" y2="19" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="22" y1="30" x2="9" y2="27" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="22" y1="37" x2="11" y2="35" stroke="#C8924A" stroke-width="0.75"/>
+          <line x1="22" y1="44" x2="14" y2="43" stroke="#C8924A" stroke-width="0.75"/>
+          <path d="M20,10 L18,6 Q21,4 24,6 L22,10 Z" stroke="#C8924A" stroke-width="0.9" fill="rgba(200,146,74,0.2)"/>
+        </svg>`;
+    }
+
+    getThemeIconsSVG(nom) {
         const n = nom.toLowerCase();
-        if (n.includes('histoire') || n.includes('hist')) return ['🏛️', '📜'];
-        if (n.includes('géo') || n.includes('geo')) return ['🌍', '🧭'];
-        if (n.includes('science') || n.includes('sci') || n.includes('bio')) return ['🔬', '⚗️'];
-        if (n.includes('math')) return ['📐', '🔢'];
-        if (n.includes('litt') || n.includes('livre')) return ['📖', '✍️'];
-        if (n.includes('art')) return ['🎨', '🖌️'];
-        if (n.includes('musique') || n.includes('music')) return ['🎵', '🎸'];
-        if (n.includes('sport') || n.includes('foot')) return ['⚽', '🏃'];
-        if (n.includes('langue') || n.includes('anglais') || n.includes('espag')) return ['🗣️', '📝'];
-        if (n.includes('philo')) return ['🤔', '📚'];
-        if (n.includes('info') || n.includes('code') || n.includes('prog')) return ['💻', '⚙️'];
-        if (n.includes('droit') || n.includes('loi')) return ['⚖️', '📋'];
-        return ['📚', '📝'];
+        if (n.includes('histoire') || n.includes('hist') || n.includes('antiq') || n.includes('mediev'))
+            return [this.svgColumn(), this.svgScroll()];
+        if (n.includes('géo') || n.includes('geo') || n.includes('carte') || n.includes('voyage'))
+            return [this.svgGlobe(), this.svgSextant()];
+        if (n.includes('science') || n.includes('chim') || n.includes('phys') || n.includes('bio'))
+            return [this.svgFlask(), this.svgCompass()];
+        if (n.includes('math') || n.includes('algèb') || n.includes('calcul') || n.includes('géomét'))
+            return [this.svgCompass(), this.svgBook()];
+        if (n.includes('litt') || n.includes('poés') || n.includes('roman') || n.includes('écriture'))
+            return [this.svgBook(), this.svgQuill()];
+        if (n.includes('musique') || n.includes('music') || n.includes('chanson') || n.includes('harmonie'))
+            return [this.svgNote(), this.svgBook()];
+        if (n.includes('art') || n.includes('peint') || n.includes('dessin') || n.includes('sculpt'))
+            return [this.svgBook(), this.svgScroll()];
+        if (n.includes('philo') || n.includes('éthique') || n.includes('logique'))
+            return [this.svgScroll(), this.svgBook()];
+        if (n.includes('droit') || n.includes('loi') || n.includes('jurid'))
+            return [this.svgScroll(), this.svgCompass()];
+        if (n.includes('info') || n.includes('code') || n.includes('prog') || n.includes('algo'))
+            return [this.svgBook(), this.svgCompass()];
+        if (n.includes('langue') || n.includes('anglais') || n.includes('espag') || n.includes('chinois'))
+            return [this.svgBook(), this.svgQuill()];
+        return [this.svgBook(), this.svgQuill()];
     }
 
     async renderThemes() {
@@ -540,13 +681,13 @@ class AppController {
         const allNotes = await this.db.getAllNotes();
 
         container.innerHTML = categories.map(cat => {
-            const [icon1, icon2] = this.getThemeIcons(cat.nom);
+            const [svg1, svg2] = this.getThemeIconsSVG(cat.nom);
             const noteCount = allNotes.filter(n => n.categorieId === cat.id).length;
             const noteLabel = noteCount === 0 ? 'Aucune note'
                 : noteCount === 1 ? '1 Note'
                 : `${noteCount} Notes`;
             return `
-            <div class="theme-card-wrap"
+            <div class="tc-wrap"
                  data-category-id="${cat.id}"
                  onclick="app.showCategoryNotes(${cat.id})"
                  ontouchstart="app.startLongPress(${cat.id}, event)"
@@ -555,17 +696,15 @@ class AppController {
                  onmousedown="app.startLongPress(${cat.id}, event)"
                  onmouseup="app.endLongPress()"
                  onmouseleave="app.cancelLongPress()">
-                <div class="theme-card-inner">
-                    <div class="theme-card-text">
-                        <div class="theme-card-title">${this.escapeHtml(cat.nom)}</div>
-                        <div class="theme-card-sub">${noteLabel}</div>
+                <div class="tc-inner">
+                    <div class="tc-text">
+                        <div class="tc-title">${this.escapeHtml(cat.nom)}</div>
+                        <div class="tc-sub">${noteLabel}</div>
                     </div>
-                    <div class="theme-card-icons">
-                        <span class="theme-card-icon">${icon1}</span>
-                        <span class="theme-card-icon">${icon2}</span>
-                    </div>
+                    <div class="tc-icons">${svg1}${svg2}</div>
                 </div>
             </div>`;
+        }).join('');
         }).join('');
     }
 

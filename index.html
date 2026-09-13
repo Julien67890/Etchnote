@@ -9,533 +9,186 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-
 :root{
-  --copper:#C8924A;
-  --copper-lt:#E8C870;
-  --copper-dk:#8B5A28;
-  --copper-grad:linear-gradient(135deg,#F2D880 0%,#D09040 18%,#A06020 40%,#C88040 62%,#E8C060 82%,#B07030 100%);
-  --copper-grad2:linear-gradient(180deg,#F0D488 0%,#C88840 30%,#8A5820 55%,#C48040 75%,#E8C060 100%);
-  --cream:#EAE0C8;
-  --cream-card:#F8F4EC;
-  --text-dk:#1A1208;
-  --text-md:#6B5535;
-  --text-lt:#A08860;
-  --shadow:0 8px 32px rgba(18,10,2,.38),0 3px 8px rgba(18,10,2,.2);
+  --cu:#C8924A;--cul:#E8C870;--cud:#8B5A28;
+  --cg:linear-gradient(135deg,#F2D880 0%,#D09040 18%,#A06020 40%,#C88040 62%,#E8C060 82%,#B07030 100%);
+  --cg2:linear-gradient(180deg,#F0D488 0%,#C88840 35%,#8A5820 60%,#D4A040 80%,#E8C060 100%);
+  --cc:#F8F4EC;--sh:0 8px 32px rgba(18,10,2,.40),0 3px 8px rgba(18,10,2,.22);
 }
-
 html,body{height:100%}
-
-body{
-  font-family:'Lato',sans-serif;
-  color:var(--text-dk);
-  min-height:100vh;
-  padding-bottom:100px;
-  overflow-x:hidden;
-  background:#EAE0C8;
-}
-
-/* ════════ FOND CARTE ASTRONOMIQUE FIXE ════════ */
-.bg-map{
-  position:fixed;inset:0;z-index:0;
-  background:#EAE0C8;overflow:hidden;
-}
+body{font-family:'Lato',sans-serif;color:#1A1208;min-height:100vh;padding-bottom:100px;overflow-x:hidden;background:#EAE0C8}
+.bg-map{position:fixed;inset:0;z-index:0;background:#EAE0C8;overflow:hidden}
 .bg-map svg{width:100%;height:100%}
-
-/* Gradient sombre qui recouvre la partie basse */
-.bg-overlay{
-  position:fixed;inset:0;z-index:1;
-  background:linear-gradient(180deg,
-    transparent 0%,
-    transparent 38%,
-    rgba(28,16,4,.28) 52%,
-    rgba(14,7,1,.82) 68%,
-    rgba(8,4,1,.97) 82%,
-    rgba(5,2,0,1) 100%);
-  pointer-events:none;
-}
-
-/* ════════ BANNIÈRE TEST ════════ */
-.test-banner{
-  position:relative;z-index:10;
-  background:linear-gradient(90deg,#5A3E18,#7A5828,#5A3E18);
-  color:#EFC870;
-  font-size:12px;font-weight:600;
-  text-align:center;padding:7px 12px;
-  letter-spacing:.3px;
-}
-
-/* ════════ HEADER ════════ */
-.app-header{
-  position:sticky;top:0;z-index:100;
-  background:linear-gradient(180deg,rgba(234,224,200,.88) 0%,rgba(234,224,200,.72) 100%);
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  padding:14px 20px 12px;
-}
+.bg-over{position:fixed;inset:0;z-index:1;background:linear-gradient(180deg,transparent 0%,transparent 36%,rgba(25,14,3,.25) 50%,rgba(12,6,1,.82) 67%,rgba(6,3,0,.97) 82%,rgba(3,1,0,1) 100%);pointer-events:none}
+.test-banner{position:relative;z-index:10;background:linear-gradient(90deg,#523816,#7A5828,#523816);color:#EFC870;font-size:12px;font-weight:600;text-align:center;padding:7px 12px;letter-spacing:.3px}
+.app-header{position:sticky;top:0;z-index:100;background:linear-gradient(180deg,rgba(234,224,200,.9) 0%,rgba(234,224,200,.74) 100%);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:14px 18px 12px}
 .header-container{display:flex;flex-direction:column;gap:10px}
 .header-top{display:flex;justify-content:space-between;align-items:center}
-
-.app-title{
-  font-family:'Playfair Display',serif;
-  font-size:28px;font-weight:400;
-  color:var(--text-dk);
-  display:flex;align-items:center;gap:10px;
-}
+.app-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:400;color:#1A1208;display:flex;align-items:center;gap:10px}
 .logo-img{width:46px;height:46px;object-fit:contain}
-
-.icon-btn{
-  width:36px;height:36px;border-radius:50%;
-  border:1.5px solid var(--copper);background:transparent;
-  color:var(--copper);font-size:15px;font-weight:700;
-  font-family:'Playfair Display',serif;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-}
-
-/* Search */
+.icon-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--cu);background:transparent;color:var(--cu);font-size:15px;font-weight:700;font-family:'Playfair Display',serif;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .search-wrap{position:relative}
 .search-wrap.hidden{display:none}
+.search-input{width:100%;padding:12px 46px 12px 20px;border-radius:30px;border:none;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);font-size:14.5px;font-family:'Lato',sans-serif;color:#1A1208;box-shadow:0 2px 18px rgba(60,36,8,.1)}
+.search-input::placeholder{color:#A08860}
+.search-input:focus{outline:none;background:rgba(255,255,255,.96)}
+.search-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:#A08860;pointer-events:none;font-size:16px}
+.app-content{padding:14px 14px 90px;max-width:800px;margin:0 auto;position:relative;z-index:5}
+.screen{display:none}.screen.active{display:block}
 
-.search-input{
-  width:100%;padding:12px 46px 12px 20px;
-  border-radius:30px;border:none;
-  background:rgba(255,255,255,.80);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  font-size:14.5px;font-family:'Lato',sans-serif;
-  color:var(--text-dk);
-  box-shadow:0 2px 16px rgba(60,36,8,.1);
-}
-.search-input::placeholder{color:var(--text-lt)}
-.search-input:focus{outline:none;background:rgba(255,255,255,.95)}
-
-.search-icon{
-  position:absolute;right:16px;top:50%;transform:translateY(-50%);
-  font-size:17px;color:var(--text-lt);pointer-events:none;
-  filter:sepia(.8) saturate(.4) brightness(.75);
-}
-
-/* ════════ CONTENU ════════ */
-.app-content{
-  padding:14px 14px 90px;
-  max-width:800px;margin:0 auto;
-  position:relative;z-index:5;
-}
-
-.screen{display:none}
-.screen.active{display:block}
-
-/* ════════ STAT CARDS ════════ */
+/* STAT CARDS */
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
-
-.stat-card{
-  background:rgba(248,244,236,.95);
-  border-radius:16px;padding:14px 14px 12px;
-  box-shadow:var(--shadow);
-  border:1.5px solid rgba(200,146,74,.4);
-  position:relative;overflow:hidden;
-  backdrop-filter:blur(6px);
-}
-.stat-card::before{
-  content:'';position:absolute;inset:0;border-radius:16px;
-  background:linear-gradient(145deg,rgba(232,192,112,.1) 0%,transparent 60%);
-  pointer-events:none;
-}
-
-.stat-card-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
-
-.stat-icon-main{
-  font-size:38px;line-height:1;
-  filter:sepia(.9) saturate(.35) brightness(.7) hue-rotate(-8deg);
-  opacity:.9;
-}
-.stat-icon-small{
-  font-size:22px;line-height:1;align-self:flex-end;
-  filter:sepia(.9) saturate(.35) brightness(.7) hue-rotate(-8deg);
-  opacity:.7;
-}
-
+.stat-card{background:rgba(248,244,236,.96);border-radius:16px;padding:14px;box-shadow:var(--sh);border:1.5px solid rgba(200,146,74,.4);position:relative;overflow:hidden;backdrop-filter:blur(6px)}
+.stat-card::before{content:'';position:absolute;inset:0;border-radius:16px;background:linear-gradient(145deg,rgba(232,192,112,.1) 0%,transparent 55%);pointer-events:none}
+.stat-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.stat-svg{opacity:.88}
 .stat-right{text-align:right}
-.stat-value{
-  font-family:'Playfair Display',serif;
-  font-size:38px;font-weight:400;
-  color:var(--copper);line-height:1;
-}
-.stat-label{
-  font-size:10px;color:var(--text-lt);
-  font-weight:600;text-transform:uppercase;
-  letter-spacing:1.5px;margin-top:2px;
-}
-.stat-badge{
-  display:inline-block;
-  font-size:9px;color:var(--copper-dk);
-  font-weight:700;text-transform:uppercase;
-  letter-spacing:1px;padding:1px 5px;
-  border:1px solid rgba(200,146,74,.4);
-  border-radius:4px;margin-left:4px;vertical-align:middle;
-}
-.stat-bar{
-  height:3px;margin-top:10px;border-radius:2px;
-  background:linear-gradient(90deg,var(--copper-lt),var(--copper));
-}
+.stat-value{font-family:'Playfair Display',serif;font-size:38px;font-weight:400;color:var(--cu);line-height:1}
+.stat-label{font-size:10px;color:#A08860;font-weight:600;text-transform:uppercase;letter-spacing:1.6px;margin-top:2px}
+.stat-badge{display:inline-block;font-size:9px;color:#8B5A28;font-weight:700;text-transform:uppercase;letter-spacing:.9px;padding:1px 5px;border:1px solid rgba(200,146,74,.4);border-radius:4px;margin-left:3px;vertical-align:middle}
+.stat-bar{height:3px;margin-top:10px;border-radius:2px;background:linear-gradient(90deg,var(--cul),var(--cu))}
+.stat-icon-sm{position:absolute;bottom:10px;right:10px;opacity:.72}
 
-/* ════════ THEME CARDS (cadre cuivré épais + onglet gauche) ════════ */
-.theme-card-wrap{
-  background:var(--copper-grad);
-  border-radius:18px;
-  padding:3px 3px 3px 16px; /* 16px = onglet gauche cuivré */
-  margin-bottom:14px;
-  cursor:pointer;transition:transform .15s;
-  box-shadow:var(--shadow);
-}
-.theme-card-wrap:active{transform:scale(.985)}
+/* THEME CARDS */
+.tc-wrap{background:var(--cg);border-radius:18px;padding:3px 3px 3px 16px;margin-bottom:14px;cursor:pointer;transition:transform .15s;box-shadow:var(--sh)}
+.tc-wrap:active{transform:scale(.985)}
+.tc-inner{background:#F8F4EC;border-radius:13px;padding:16px 16px 16px 16px;display:flex;justify-content:space-between;align-items:center;min-height:86px}
+.tc-text{flex:1;padding-right:8px}
+.tc-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:400;color:#1A1208;line-height:1.2}
+.tc-sub{font-size:13px;color:var(--cu);font-weight:600;margin-top:5px;letter-spacing:.2px}
+.tc-icons{display:flex;gap:6px;align-items:center;flex-shrink:0}
 
-.theme-card-inner{
-  background:#F8F4EC;
-  border-radius:13px;
-  padding:16px 16px 16px 18px;
-  display:flex;justify-content:space-between;align-items:center;
-  min-height:84px;
-}
-
-.theme-card-text{flex:1;padding-right:10px}
-
-.theme-card-title{
-  font-family:'Playfair Display',serif;
-  font-size:24px;font-weight:400;
-  color:var(--text-dk);line-height:1.2;
-}
-.theme-card-sub{
-  font-size:13px;color:var(--copper);
-  font-weight:600;margin-top:4px;letter-spacing:.2px;
-}
-
-.theme-card-icons{
-  display:flex;gap:4px;align-items:center;flex-shrink:0;
-}
-.theme-card-icon{
-  font-size:34px;line-height:1;
-  filter:sepia(.85) saturate(.35) brightness(.75) hue-rotate(-8deg);
-  opacity:.8;
-}
-
-/* ════════ CARTES GÉNÉRIQUES ════════ */
-.card{
-  background:rgba(248,244,236,.95);
-  border-radius:16px;padding:20px;margin-bottom:14px;
-  box-shadow:var(--shadow);
-  border:1.5px solid rgba(200,146,74,.35);
-  position:relative;overflow:hidden;
-  backdrop-filter:blur(6px);
-}
-.card::before{
-  content:'';position:absolute;inset:0;border-radius:16px;
-  background:linear-gradient(145deg,rgba(232,192,112,.08) 0%,transparent 50%);
-  pointer-events:none;
-}
+/* GENERIC CARD */
+.card{background:rgba(248,244,236,.96);border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:var(--sh);border:1.5px solid rgba(200,146,74,.35);position:relative;overflow:hidden;backdrop-filter:blur(6px)}
+.card::before{content:'';position:absolute;inset:0;border-radius:16px;background:linear-gradient(145deg,rgba(232,192,112,.07) 0%,transparent 50%);pointer-events:none}
 .card:active{transform:scale(.985)}
-
-.card-title{
-  font-family:'Playfair Display',serif;
-  font-size:20px;font-weight:400;
-  color:var(--text-dk);margin-bottom:4px;
-}
-.card-subtitle{font-size:14px;color:var(--text-md);font-style:italic}
-
-/* Note cards */
-.note-card{border-left:4px solid var(--copper-lt)}
-.note-badge{
-  display:inline-block;padding:4px 12px;
-  background:linear-gradient(90deg,rgba(200,146,74,.14),rgba(200,146,74,.06));
-  color:var(--copper-dk);border-radius:12px;
-  font-size:12px;font-weight:600;margin-top:8px;
-  border:1px solid rgba(200,146,74,.3);
-}
+.card-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:#1A1208;margin-bottom:4px}
+.card-subtitle{font-size:14px;color:#6B5535;font-style:italic}
+.note-card{border-left:4px solid var(--cul)}
+.note-badge{display:inline-block;padding:4px 12px;background:linear-gradient(90deg,rgba(200,146,74,.14),rgba(200,146,74,.06));color:#8B5A28;border-radius:12px;font-size:12px;font-weight:600;margin-top:8px;border:1px solid rgba(200,146,74,.3)}
 .note-overdue{border-left-color:#C0392B}
 .note-overdue .note-badge{background:#FDECEA;color:#C0392B;border-color:#F5B7B1}
 
-/* ════════ BOUTONS ════════ */
-.btn{
-  width:100%;padding:14px;border:none;border-radius:10px;
-  font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;
-  display:flex;align-items:center;justify-content:center;
-  gap:8px;font-family:'Lato',sans-serif;
-}
-.btn-primary{background:var(--copper-grad);color:#1A1208}
-.btn-primary:active{filter:brightness(.9);transform:scale(.98)}
-.btn-secondary{background:rgba(237,232,220,.85);color:var(--text-dk);border:1.5px solid rgba(200,146,74,.3)}
-.btn-secondary:active{filter:brightness(.95);transform:scale(.98)}
+/* BUTTONS */
+.btn{width:100%;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Lato',sans-serif}
+.btn-primary{background:var(--cg);color:#1A1208}.btn-primary:active{filter:brightness(.9);transform:scale(.98)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-secondary{background:rgba(237,232,220,.85);color:#1A1208;border:1.5px solid rgba(200,146,74,.3)}.btn-secondary:active{filter:brightness(.95);transform:scale(.98)}
 
-/* ════════ FORMULAIRES ════════ */
+/* FORMS */
 .form-group{margin-bottom:16px}
-.form-label{display:block;font-size:14px;font-weight:600;color:var(--text-md);margin-bottom:8px}
-.form-input,.form-textarea,.form-select{
-  width:100%;padding:12px;
-  border:1.5px solid rgba(200,146,74,.3);
-  border-radius:8px;font-size:15px;
-  font-family:'Lato',sans-serif;
-  background:var(--cream-card);color:var(--text-dk);
-  transition:border-color .2s;
-}
-.form-input:focus,.form-textarea:focus,.form-select:focus{outline:none;border-color:var(--copper)}
+.form-label{display:block;font-size:14px;font-weight:600;color:#6B5535;margin-bottom:8px}
+.form-input,.form-textarea,.form-select{width:100%;padding:12px;border:1.5px solid rgba(200,146,74,.3);border-radius:8px;font-size:15px;font-family:'Lato',sans-serif;background:var(--cc);color:#1A1208;transition:border-color .2s}
+.form-input:focus,.form-textarea:focus,.form-select:focus{outline:none;border-color:var(--cu)}
 .form-textarea{min-height:120px;resize:vertical}
 
-/* ════════ NAV BAS ════════ */
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  background:rgba(250,247,240,.97);
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  padding:8px 0 20px;
-  display:flex;justify-content:space-around;
-  border-radius:22px 22px 0 0;
-  border-top:1.5px solid rgba(200,146,74,.2);
-  box-shadow:0 -6px 30px rgba(20,10,2,.18);
-  z-index:1000;
-}
-.nav-item{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;padding:6px 4px;
-  cursor:pointer;border:none;background:none;
-  color:var(--text-lt);font-size:10.5px;
-  font-family:'Lato',sans-serif;
-  transition:all .2s;gap:2px;
-}
-.nav-item.active{color:var(--copper)}
-.nav-item:active{transform:scale(.9)}
-
-.nav-icon{
-  font-size:24px;line-height:1;
-  filter:sepia(.5) saturate(.4) brightness(.85);
-}
-.nav-item.active .nav-icon{
-  transform:scale(1.1);
-  filter:sepia(.7) saturate(.6) brightness(.75) hue-rotate(-5deg);
-}
+/* NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(250,247,240,.97);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);padding:8px 0 20px;display:flex;justify-content:space-around;border-radius:22px 22px 0 0;border-top:1.5px solid rgba(200,146,74,.2);box-shadow:0 -6px 30px rgba(18,10,2,.18);z-index:1000}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:6px 4px;cursor:pointer;border:none;background:none;color:#A08860;font-family:'Lato',sans-serif;transition:all .2s;gap:2px}
+.nav-item.active{color:var(--cu)}.nav-item:active{transform:scale(.9)}
+.nav-icon{font-size:24px;line-height:1}
 .nav-label{font-weight:600;font-size:10.5px}
 
-/* ════════ MODAL ════════ */
-.modal{
-  display:none;position:fixed;inset:0;
-  background:rgba(16,8,2,.65);
-  z-index:2000;padding:20px;overflow-y:auto;
-}
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(14,7,1,.65);z-index:2000;padding:20px;overflow-y:auto}
 .modal.active{display:flex;align-items:center;justify-content:center}
-
-.modal-content{
-  background:var(--cream-card);border-radius:20px;
-  padding:26px 22px;max-width:480px;width:100%;
-  max-height:90vh;overflow-y:auto;
-  border:1.5px solid rgba(200,146,74,.45);
-  box-shadow:0 24px 70px rgba(16,8,0,.4);
-}
+.modal-content{background:var(--cc);border-radius:20px;padding:26px 22px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;border:1.5px solid rgba(200,146,74,.45);box-shadow:0 24px 70px rgba(14,7,0,.42)}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text-dk)}
-.modal-close{font-size:26px;cursor:pointer;color:var(--text-lt);border:none;background:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#1A1208}
+.modal-close{font-size:26px;cursor:pointer;color:#A08860;border:none;background:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center}
 
-/* ════════ POPUP NOTES À LIRE ════════ */
-.popup-overlay{
-  display:none;position:fixed;inset:0;
-  background:rgba(12,6,1,.7);
-  z-index:3000;
-  align-items:center;justify-content:center;padding:24px;
-}
-.popup-overlay.active{display:flex}
+/* POPUP */
+.popup-ov{display:none;position:fixed;inset:0;background:rgba(10,5,1,.72);z-index:3000;align-items:center;justify-content:center;padding:24px}
+.popup-ov.active{display:flex}
+.popup-box{position:relative;border-radius:22px;padding:3px;background:var(--cg);box-shadow:0 24px 70px rgba(10,5,0,.52);max-width:340px;width:100%}
+.popup-in{background:var(--cc);border-radius:20px;padding:28px 22px;text-align:center}
+.popup-icon{font-size:54px;margin-bottom:12px;line-height:1}
+.popup-title{font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:#1A1208;margin-bottom:8px}
+.popup-txt{font-size:14px;color:#6B5535;margin-bottom:22px}
+.popup-num{font-family:'Playfair Display',serif;font-size:52px;color:var(--cu);font-weight:400;line-height:1;display:block;margin-bottom:4px}
+.popup-go{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;background:var(--cg);color:#1A1208;font-family:'Lato',sans-serif;margin-bottom:10px}
+.popup-skip{width:100%;padding:11px;border:1.5px solid rgba(200,146,74,.35);border-radius:12px;font-size:14px;cursor:pointer;background:transparent;color:#6B5535;font-family:'Lato',sans-serif}
 
-.popup-box{
-  position:relative;
-  border-radius:22px;
-  padding:3px;
-  background:var(--copper-grad);
-  box-shadow:0 24px 70px rgba(12,6,0,.5);
-  max-width:340px;width:100%;
-}
-.popup-inner{
-  background:var(--cream-card);
-  border-radius:20px;
-  padding:28px 22px;
-  text-align:center;
-}
-.popup-icon{font-size:56px;margin-bottom:12px;line-height:1;
-  filter:sepia(.8) saturate(.4) brightness(.75) hue-rotate(-5deg)}
-.popup-title{
-  font-family:'Playfair Display',serif;
-  font-size:23px;font-weight:700;
-  color:var(--text-dk);margin-bottom:8px;
-}
-.popup-count{font-size:14px;color:var(--text-md);margin-bottom:22px}
-.popup-num{
-  font-family:'Playfair Display',serif;
-  font-size:52px;color:var(--copper);
-  font-weight:400;line-height:1;
-  display:block;margin-bottom:4px;
-}
-.popup-btn-go{
-  width:100%;padding:14px;border:none;border-radius:12px;
-  font-size:15px;font-weight:700;cursor:pointer;
-  background:var(--copper-grad);color:#1A1208;
-  font-family:'Lato',sans-serif;margin-bottom:10px;
-  letter-spacing:.3px;
-}
-.popup-btn-skip{
-  width:100%;padding:11px;
-  border:1.5px solid rgba(200,146,74,.35);border-radius:12px;
-  font-size:14px;cursor:pointer;background:transparent;
-  color:var(--text-md);font-family:'Lato',sans-serif;
-}
-
-/* ════════ FAB ════════ */
-.fab{
-  position:fixed;bottom:100px;right:18px;
-  width:64px;height:64px;border-radius:50%;
-  background:var(--copper-grad2);
-  color:#1A1208;
-  border:2px solid rgba(240,210,120,.5);
-  font-size:28px;font-weight:300;cursor:pointer;
-  box-shadow:0 6px 22px rgba(130,72,10,.55),0 0 0 5px rgba(200,146,74,.12);
-  display:flex;align-items:center;justify-content:center;
-  z-index:999;font-family:'Lato',sans-serif;
-}
+/* FAB */
+.fab{position:fixed;bottom:100px;right:18px;width:64px;height:64px;border-radius:50%;background:var(--cg2);color:#1A1208;border:2px solid rgba(240,210,120,.5);font-size:28px;cursor:pointer;box-shadow:0 6px 22px rgba(130,72,10,.55),0 0 0 5px rgba(200,146,74,.12);display:flex;align-items:center;justify-content:center;z-index:999;font-family:'Lato',sans-serif}
 .fab:active{transform:scale(.92);filter:brightness(.9)}
 
-/* ════════ CONTENU NOTE ════════ */
-.note-content{
-  background:rgba(237,232,220,.6);
-  padding:16px;border-radius:8px;
-  margin:16px 0;white-space:pre-wrap;
-  word-wrap:break-word;line-height:1.7;font-size:15px;
-  border:1px solid rgba(200,146,74,.2);
-}
-
-/* Links */
-.link-card{border-left:4px solid #7B9EC4}
-.link-url{color:#5B7FA8;font-size:13px;word-break:break-all;margin-top:6px}
-
-/* Empty state */
-.empty-state{text-align:center;padding:60px 20px}
-.empty-icon{font-size:56px;margin-bottom:16px;opacity:.35}
-.empty-text{font-family:'Playfair Display',serif;font-size:18px;color:var(--text-lt);margin-bottom:24px}
-
-/* Help */
+/* MISC */
+.note-content{background:rgba(237,232,220,.6);padding:16px;border-radius:8px;margin:16px 0;white-space:pre-wrap;word-wrap:break-word;line-height:1.7;font-size:15px;border:1px solid rgba(200,146,74,.2)}
+.link-card{border-left:4px solid #7B9EC4}.link-url{color:#5B7FA8;font-size:13px;word-break:break-all;margin-top:6px}
+.empty-state{text-align:center;padding:60px 20px}.empty-icon{font-size:56px;margin-bottom:16px;opacity:.35}.empty-text{font-family:'Playfair Display',serif;font-size:18px;color:#A08860;margin-bottom:24px}
 .help-content{background:rgba(237,232,220,.7);padding:16px;border-radius:10px;margin-top:16px;border:1px solid rgba(200,146,74,.2)}
-.help-content h3{font-family:'Playfair Display',serif;color:var(--copper);margin-bottom:12px}
-.help-content ul{list-style:none;padding:0}
-.help-content li{padding:8px 0;border-bottom:1px solid rgba(200,146,74,.15);color:var(--text-md);font-size:14px}
-.help-content li:last-child{border-bottom:none}
-
-/* Countdown */
+.help-content h3{font-family:'Playfair Display',serif;color:var(--cu);margin-bottom:12px}
+.help-content ul{list-style:none;padding:0}.help-content li{padding:8px 0;border-bottom:1px solid rgba(200,146,74,.15);color:#6B5535;font-size:14px}.help-content li:last-child{border-bottom:none}
 #countdownContainer{margin-bottom:12px;padding:14px 16px;border-radius:12px;background:rgba(237,232,220,.7);border:1px solid rgba(200,146,74,.25);text-align:center}
-
-/* Search highlight */
 mark{background:rgba(232,192,112,.45);border-radius:3px;padding:0 2px;color:inherit}
-
-/* Countdown locked btn */
-.btn-primary:disabled{opacity:.45;cursor:not-allowed}
 </style>
 </head>
 <body>
 
-<!-- ══ FOND CARTE ASTRONOMIQUE ══ -->
+<!-- FOND CARTE ASTRONOMIQUE -->
 <div class="bg-map">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice">
   <rect width="390" height="844" fill="#EAE0C8"/>
-
-  <!-- Cercles concentriques principaux – centré à 200,280 -->
-  <g fill="none" stroke="#7A6030" stroke-width="0.55" opacity="0.32">
-    <circle cx="200" cy="280" r="400"/>
-    <circle cx="200" cy="280" r="290"/>
-    <circle cx="200" cy="280" r="205"/>
-    <circle cx="200" cy="280" r="140"/>
-    <circle cx="200" cy="280" r="88"/>
-    <circle cx="200" cy="280" r="46"/>
-    <circle cx="200" cy="280" r="18"/>
-    <!-- 16 lignes radiales -->
-    <line x1="200" y1="-120" x2="200" y2="680"/>
-    <line x1="-200" y1="280" x2="600" y2="280"/>
-    <line x1="-83"  y1="-3"  x2="483" y2="563"/>
-    <line x1="483"  y1="-3"  x2="-83" y2="563"/>
-    <line x1="-108" y1="73"  x2="508" y2="487"/>
-    <line x1="508"  y1="73"  x2="-108" y2="487"/>
-    <line x1="47"   y1="-140" x2="353" y2="700"/>
-    <line x1="353"  y1="-140" x2="47"  y2="700"/>
-    <!-- points cardinaux secondaires -->
-    <line x1="200"  y1="-120" x2="600" y2="280"/>
-    <line x1="600"  y1="280"  x2="200" y2="680"/>
-    <line x1="200"  y1="680"  x2="-200" y2="280"/>
-    <line x1="-200" y1="280"  x2="200" y2="-120"/>
+  <!-- Cercles principaux centre 200,275 -->
+  <g fill="none" stroke="#7A6030" stroke-width="0.6" opacity="0.42">
+    <circle cx="200" cy="275" r="400"/><circle cx="200" cy="275" r="300"/>
+    <circle cx="200" cy="275" r="210"/><circle cx="200" cy="275" r="140"/>
+    <circle cx="200" cy="275" r="85"/><circle cx="200" cy="275" r="42"/><circle cx="200" cy="275" r="16"/>
+    <!-- 16 rayons -->
+    <line x1="200" y1="-125" x2="200" y2="675"/>
+    <line x1="-200" y1="275" x2="600" y2="275"/>
+    <line x1="-83" y1="-8" x2="483" y2="558"/>
+    <line x1="483" y1="-8" x2="-83" y2="558"/>
+    <line x1="-117" y1="68" x2="517" y2="482"/>
+    <line x1="517" y1="68" x2="-117" y2="482"/>
+    <line x1="42" y1="-148" x2="358" y2="698"/>
+    <line x1="358" y1="-148" x2="42" y2="698"/>
   </g>
-
-  <!-- Bagues intermédiaires légères -->
-  <g fill="none" stroke="#7A6030" stroke-width="0.35" opacity="0.18">
-    <circle cx="200" cy="280" r="58"/>
-    <circle cx="200" cy="280" r="115"/>
-    <circle cx="200" cy="280" r="170"/>
-    <circle cx="200" cy="280" r="245"/>
-    <circle cx="200" cy="280" r="345"/>
+  <!-- Bagues légères -->
+  <g fill="none" stroke="#7A6030" stroke-width="0.38" opacity="0.22">
+    <circle cx="200" cy="275" r="54"/><circle cx="200" cy="275" r="112"/>
+    <circle cx="200" cy="275" r="175"/><circle cx="200" cy="275" r="255"/>
   </g>
-
-  <!-- Petit astrolabe secondaire haut-gauche – centré à 78,155 -->
-  <g fill="none" stroke="#7A6030" stroke-width="0.5" opacity="0.28">
-    <circle cx="78" cy="155" r="78"/>
-    <circle cx="78" cy="155" r="52"/>
-    <circle cx="78" cy="155" r="28"/>
-    <circle cx="78" cy="155" r="10"/>
-    <line x1="78" y1="77"  x2="78"  y2="233"/>
-    <line x1="0"  y1="155" x2="156" y2="155"/>
-    <line x1="23" y1="100" x2="133" y2="210"/>
-    <line x1="133" y1="100" x2="23" y2="210"/>
+  <!-- Astrolabe secondaire haut-gauche 80,155 -->
+  <g fill="none" stroke="#7A6030" stroke-width="0.52" opacity="0.32">
+    <circle cx="80" cy="155" r="82"/><circle cx="80" cy="155" r="56"/>
+    <circle cx="80" cy="155" r="30"/><circle cx="80" cy="155" r="11"/>
+    <line x1="80" y1="73" x2="80" y2="237"/>
+    <line x1="-2" y1="155" x2="162" y2="155"/>
+    <line x1="22" y1="97" x2="138" y2="213"/>
+    <line x1="138" y1="97" x2="22" y2="213"/>
   </g>
-
-  <!-- Annotations décoratives haut-droite -->
-  <g fill="none" stroke="#7A6030" stroke-width="0.4" opacity="0.2">
-    <line x1="285" y1="58"  x2="375" y2="102"/>
-    <line x1="300" y1="68"  x2="372" y2="78"/>
-    <line x1="315" y1="82"  x2="385" y2="88"/>
-    <circle cx="330" cy="72" r="2.5" fill="#7A6030" opacity="0.3"/>
-    <line x1="340" y1="110" x2="388" y2="120"/>
-    <line x1="345" y1="126" x2="390" y2="132"/>
+  <!-- Annotations haut-droite -->
+  <g fill="none" stroke="#7A6030" stroke-width="0.4" opacity="0.22">
+    <line x1="286" y1="56" x2="378" y2="98"/><line x1="302" y1="66" x2="375" y2="76"/>
+    <line x1="318" y1="80" x2="388" y2="86"/>
+    <circle cx="332" cy="70" r="2.5" fill="#7A6030" opacity="0.3"/>
+    <line x1="342" y1="108" x2="390" y2="118"/>
   </g>
-
-  <!-- Tirets de graduation sur cercle externe -->
-  <g fill="none" stroke="#7A6030" stroke-width="0.6" opacity="0.22">
-    <line x1="200" y1="-122" x2="200" y2="-108"/>
-    <line x1="200" y1="660"  x2="200" y2="674"/>
-    <line x1="-202" y1="280" x2="-188" y2="280"/>
-    <line x1="588"  y1="280" x2="602"  y2="280"/>
-  </g>
-
-  <!-- ═══ TACHES D'ENCRE zone sombre (y > 560) ═══ -->
-  <g fill="#080402" opacity="0.72">
-    <!-- Grande tache principale -->
-    <ellipse cx="148" cy="722" rx="56" ry="34" transform="rotate(-18 148 722)"/>
-    <ellipse cx="155" cy="718" rx="36" ry="20" transform="rotate(-18 155 718)"/>
-    <ellipse cx="136" cy="734" rx="22" ry="14" transform="rotate(-25 136 734)"/>
-    <!-- Gouttelettes -->
-    <circle cx="88"  cy="698" r="7"/>
-    <circle cx="76"  cy="710" r="4"/>
-    <circle cx="210" cy="708" r="5"/>
-    <circle cx="224" cy="718" r="3"/>
-    <ellipse cx="192" cy="738" rx="14" ry="9" transform="rotate(20 192 738)"/>
-    <circle cx="165" cy="758" r="4"/>
-    <!-- Deuxième tache droite -->
-    <ellipse cx="312" cy="695" rx="25" ry="16"/>
-    <circle cx="294" cy="680" r="4"/>
-    <circle cx="336" cy="680" r="2.5"/>
-    <ellipse cx="330" cy="708" rx="10" ry="6" transform="rotate(12 330 708)"/>
-    <!-- Petits points dispersés -->
-    <circle cx="252" cy="665" r="5.5"/>
-    <circle cx="55"  cy="670" r="4"/>
-    <circle cx="358" cy="756" r="3.5"/>
-    <circle cx="178" cy="778" r="4.5"/>
-    <circle cx="118" cy="786" r="3"/>
-    <circle cx="280" cy="774" r="3"/>
-    <circle cx="62"  cy="750" r="2.5"/>
+  <!-- Taches d encre zone sombre -->
+  <g fill="#060300" opacity="0.78">
+    <ellipse cx="148" cy="718" rx="58" ry="36" transform="rotate(-17 148 718)"/>
+    <ellipse cx="152" cy="712" rx="36" ry="22" transform="rotate(-17 152 712)"/>
+    <ellipse cx="132" cy="730" rx="24" ry="15" transform="rotate(-28 132 730)"/>
+    <circle cx="86" cy="694" r="8"/><circle cx="72" cy="707" r="5"/>
+    <circle cx="212" cy="706" r="6"/><circle cx="228" cy="717" r="3.5"/>
+    <ellipse cx="190" cy="736" rx="15" ry="10" transform="rotate(22 190 736)"/>
+    <circle cx="163" cy="756" r="4.5"/>
+    <ellipse cx="314" cy="692" rx="28" ry="18"/>
+    <circle cx="294" cy="676" r="5"/><circle cx="338" cy="677" r="3"/>
+    <ellipse cx="330" cy="708" rx="11" ry="7" transform="rotate(14 330 708)"/>
+    <circle cx="254" cy="663" r="6"/><circle cx="55" cy="668" r="4.5"/>
+    <circle cx="360" cy="754" r="4"/><circle cx="176" cy="776" r="5"/>
+    <circle cx="116" cy="784" r="3.5"/><circle cx="282" cy="772" r="3.5"/>
+    <circle cx="60" cy="748" r="3"/>
   </g>
 </svg>
 </div>
-<div class="bg-overlay"></div>
+<div class="bg-over"></div>
 
-<!-- ══ BANNIÈRE TEST ══ -->
-<div class="test-banner">⚠️ MODE TEST ACTIVÉ : heures → secondes | jours → minutes</div>
+<div class="test-banner">&#9888;&#65039; MODE TEST ACTIVÉ : heures &#8594; secondes | jours &#8594; minutes</div>
 
-<!-- ══ HEADER ══ -->
 <div class="app-header">
   <div class="header-container">
     <div class="header-top">
@@ -547,30 +200,76 @@ mark{background:rgba(232,192,112,.45);border-radius:3px;padding:0 2px;color:inhe
     </div>
     <div class="search-wrap" id="searchContainer">
       <input type="text" class="search-input" id="searchInput" placeholder="Chercher une note">
-      <span class="search-icon">🔍</span>
+      <span class="search-icon">&#128269;</span>
     </div>
   </div>
 </div>
 
-<!-- ══ CONTENU ══ -->
 <div class="app-content">
-
-  <!-- Thèmes -->
   <div class="screen active" id="screenThemes">
     <div class="stats">
       <div class="stat-card">
-        <div class="stat-card-row">
-          <span class="stat-icon-main">📖</span>
+        <div class="stat-row">
+          <div class="stat-svg">
+            <!-- LIVRE OUVERT SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 52" fill="none" width="54" height="46">
+              <path d="M30,6 C22,4 11,7 5,11 L7,44 C14,40 22,39 30,41 Z" stroke="#C8924A" stroke-width="1.3" fill="rgba(200,146,74,0.05)"/>
+              <path d="M30,6 C38,4 49,7 55,11 L53,44 C46,40 38,39 30,41 Z" stroke="#C8924A" stroke-width="1.3" fill="rgba(200,146,74,0.05)"/>
+              <path d="M30,6 Q31,23 30,41" stroke="#9A6820" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="11" y1="17" x2="27" y2="15" stroke="#C8924A" stroke-width="0.8"/>
+              <line x1="11" y1="22" x2="27" y2="20" stroke="#C8924A" stroke-width="0.8"/>
+              <line x1="11" y1="27" x2="27" y2="25" stroke="#C8924A" stroke-width="0.8"/>
+              <line x1="11" y1="32" x2="27" y2="30" stroke="#C8924A" stroke-width="0.8"/>
+              <line x1="11" y1="37" x2="22" y2="36" stroke="#C8924A" stroke-width="0.8"/>
+              <line x1="33" y1="15" x2="49" y2="17" stroke="#C8924A" stroke-width="0.8"/>
+              <line x1="33" y1="20" x2="49" y2="22" stroke="#C8924A" stroke-width="0.8"/>
+              <line x1="33" y1="25" x2="49" y2="27" stroke="#C8924A" stroke-width="0.8"/>
+              <line x1="33" y1="30" x2="49" y2="32" stroke="#C8924A" stroke-width="0.8"/>
+              <line x1="33" y1="36" x2="44" y2="37" stroke="#C8924A" stroke-width="0.8"/>
+            </svg>
+          </div>
           <div class="stat-right">
             <div class="stat-value" id="statCategories">0</div>
             <div class="stat-label">Thèmes</div>
           </div>
         </div>
-        <span class="stat-icon-small" style="float:right;margin-top:-8px">🌍</span>
+        <!-- Globe SVG petit -->
+        <div class="stat-icon-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 44" fill="none" width="32" height="40">
+            <circle cx="18" cy="17" r="14" stroke="#C8924A" stroke-width="1.1" fill="rgba(200,146,74,0.04)"/>
+            <ellipse cx="18" cy="17" rx="5.5" ry="14" stroke="#C8924A" stroke-width="0.8"/>
+            <path d="M4,11 Q18,8 32,11" stroke="#C8924A" stroke-width="0.7" fill="none"/>
+            <line x1="4" y1="17" x2="32" y2="17" stroke="#C8924A" stroke-width="0.7"/>
+            <path d="M4,23 Q18,26 32,23" stroke="#C8924A" stroke-width="0.7" fill="none"/>
+            <line x1="18" y1="3" x2="18" y2="31" stroke="#C8924A" stroke-width="0.7"/>
+            <line x1="18" y1="31" x2="18" y2="38" stroke="#C8924A" stroke-width="1.1"/>
+            <ellipse cx="18" cy="40" rx="7" ry="2.4" stroke="#C8924A" stroke-width="1.0"/>
+            <line x1="11" y1="39" x2="25" y2="39" stroke="#C8924A" stroke-width="1.0"/>
+          </svg>
+        </div>
       </div>
       <div class="stat-card">
-        <div class="stat-card-row">
-          <span class="stat-icon-main">🪶</span>
+        <div class="stat-row">
+          <div class="stat-svg">
+            <!-- PLUME SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 62" fill="none" width="44" height="58">
+              <path d="M24,56 C26,46 36,32 42,18 C46,8 40,3 34,3 C28,3 24,7 22,13" stroke="#C8924A" stroke-width="1.2" fill="none"/>
+              <path d="M24,56 C22,48 14,36 8,22 C4,12 9,4 16,3 C22,2 26,6 24,13" stroke="#C8924A" stroke-width="1.2" fill="none"/>
+              <path d="M24,56 C26,46 36,32 42,18 C46,8 40,3 34,3 C22,3 18,4 16,3 C9,4 4,12 8,22 C14,36 22,48 24,56 Z" fill="rgba(200,146,74,0.06)"/>
+              <path d="M24,56 L22,28 L20,10" stroke="#9A6820" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="22" y1="16" x2="33" y2="11" stroke="#C8924A" stroke-width="0.75"/>
+              <line x1="22" y1="22" x2="36" y2="17" stroke="#C8924A" stroke-width="0.75"/>
+              <line x1="22" y1="29" x2="37" y2="24" stroke="#C8924A" stroke-width="0.75"/>
+              <line x1="22" y1="36" x2="36" y2="32" stroke="#C8924A" stroke-width="0.75"/>
+              <line x1="22" y1="43" x2="33" y2="40" stroke="#C8924A" stroke-width="0.75"/>
+              <line x1="22" y1="16" x2="13" y2="12" stroke="#C8924A" stroke-width="0.75"/>
+              <line x1="22" y1="22" x2="10" y2="18" stroke="#C8924A" stroke-width="0.75"/>
+              <line x1="22" y1="29" x2="9" y2="26" stroke="#C8924A" stroke-width="0.75"/>
+              <line x1="22" y1="36" x2="10" y2="34" stroke="#C8924A" stroke-width="0.75"/>
+              <line x1="22" y1="43" x2="13" y2="42" stroke="#C8924A" stroke-width="0.75"/>
+              <path d="M20,10 L18,6 Q21,4 24,6 L22,10 Z" stroke="#C8924A" stroke-width="0.9" fill="rgba(200,146,74,0.2)"/>
+            </svg>
+          </div>
           <div class="stat-right">
             <div class="stat-value" id="statNotes">0</div>
             <div class="stat-label">Notes <span class="stat-badge">Récent</span></div>
@@ -582,243 +281,138 @@ mark{background:rgba(232,192,112,.45);border-radius:3px;padding:0 2px;color:inhe
     <div id="themesList"></div>
   </div>
 
-  <!-- Aléatoire -->
   <div class="screen" id="screenRandom"><div id="randomNoteContent"></div></div>
-
-  <!-- À lire -->
   <div class="screen" id="screenToRead"><div id="toReadList"></div></div>
 
-  <!-- Rapide (pas de recherche) -->
   <div class="screen" id="screenQuick">
     <div class="card">
-      <div class="card-title">📋 Tableau blanc</div>
+      <div class="card-title">&#128203; Tableau blanc</div>
       <div class="card-subtitle" style="margin-bottom:16px">Notez rapidement vos idées</div>
-      <textarea class="form-textarea" id="quickNoteText"
-        placeholder="Tapez vos notes ici...&#10;Sauvegarde automatique 💾"
-        style="min-height:420px"></textarea>
-      <div style="text-align:right;margin-top:8px;color:var(--text-lt);font-size:12px">
-        <span id="quickNoteSaved">✓ Sauvegardé</span>
-      </div>
+      <textarea class="form-textarea" id="quickNoteText" placeholder="Tapez vos notes ici...&#10;Sauvegarde automatique &#128190;" style="min-height:420px"></textarea>
+      <div style="text-align:right;margin-top:8px;color:#A08860;font-size:12px"><span id="quickNoteSaved">✓ Sauvegardé</span></div>
     </div>
   </div>
 
-  <!-- Liens (pas de recherche) -->
   <div class="screen" id="screenLinks"><div id="linksList"></div></div>
-
-  <!-- Notes d'un thème -->
   <div class="screen" id="screenCategoryNotes"><div id="categoryNotesList"></div></div>
-
-  <!-- Résultats recherche -->
   <div class="screen" id="screenSearch"><div id="searchResultsList"></div></div>
 
-  <!-- Détail note -->
   <div class="screen" id="screenNoteDetail">
     <div class="card">
       <div class="card-title" id="noteDetailTitle"></div>
       <div class="card-subtitle" id="noteDetailCategory"></div>
       <div class="note-content" id="noteDetailContent"></div>
       <div id="countdownContainer" style="display:none">
-        <div style="font-size:12px;color:var(--text-lt);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">⏳ Prochaine révision dans</div>
-        <div id="countdownTimer" style="font-family:'Playfair Display',serif;font-size:32px;color:var(--copper);font-weight:400"></div>
-        <div style="font-size:12px;color:var(--text-lt);margin-top:4px" id="countdownLevel"></div>
+        <div style="font-size:12px;color:#A08860;font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">⏳ Prochaine révision dans</div>
+        <div id="countdownTimer" style="font-family:'Playfair Display',serif;font-size:32px;color:#C8924A;font-weight:400"></div>
+        <div style="font-size:12px;color:#A08860;margin-top:4px" id="countdownLevel"></div>
       </div>
       <button class="btn btn-primary" id="markAsReadBtn">✓ Relu / Compris</button>
-      <button class="btn btn-secondary" style="margin-top:8px" id="editNoteFromDetailBtn">✏️ Modifier</button>
-      <button class="btn btn-secondary" style="margin-top:8px" id="backFromNoteBtn">← Retour</button>
+      <button class="btn btn-secondary" style="margin-top:8px" id="editNoteFromDetailBtn">&#9999;&#65039; Modifier</button>
+      <button class="btn btn-secondary" style="margin-top:8px" id="backFromNoteBtn">&#8592; Retour</button>
     </div>
   </div>
+</div>
 
-</div><!-- /app-content -->
-
-<!-- FAB -->
 <button class="fab" id="fabBtn">+</button>
 
-<!-- Nav bas -->
 <nav class="bottom-nav">
-  <button class="nav-item active" data-screen="screenThemes">
-    <div class="nav-icon">📚</div><div class="nav-label">Thèmes</div>
-  </button>
-  <button class="nav-item" data-screen="screenRandom">
-    <div class="nav-icon">🎲</div><div class="nav-label">Aléatoire</div>
-  </button>
-  <button class="nav-item" data-screen="screenToRead">
-    <div class="nav-icon">📖</div><div class="nav-label">À lire</div>
-  </button>
-  <button class="nav-item" data-screen="screenQuick">
-    <div class="nav-icon">⚡</div><div class="nav-label">Rapide</div>
-  </button>
-  <button class="nav-item" data-screen="screenLinks">
-    <div class="nav-icon">🔗</div><div class="nav-label">Liens</div>
-  </button>
+  <button class="nav-item active" data-screen="screenThemes"><div class="nav-icon">&#128218;</div><div class="nav-label">Thèmes</div></button>
+  <button class="nav-item" data-screen="screenRandom"><div class="nav-icon">&#127922;</div><div class="nav-label">Aléatoire</div></button>
+  <button class="nav-item" data-screen="screenToRead"><div class="nav-icon">&#128218;</div><div class="nav-label">À lire</div></button>
+  <button class="nav-item" data-screen="screenQuick"><div class="nav-icon">&#9889;</div><div class="nav-label">Rapide</div></button>
+  <button class="nav-item" data-screen="screenLinks"><div class="nav-icon">&#128279;</div><div class="nav-label">Liens</div></button>
 </nav>
 
-<!-- ══ POPUP NOTES À LIRE ══ -->
-<div class="popup-overlay" id="popupNotesALire">
-  <div class="popup-box">
-    <div class="popup-inner">
-      <div class="popup-icon">📖</div>
-      <div class="popup-title">Notes à réviser !</div>
-      <div class="popup-count">
-        <span class="popup-num" id="popupCount">0</span>
-        note(s) attendent votre révision
-      </div>
-      <button class="popup-btn-go" id="popupBtnLire">Réviser maintenant</button>
-      <button class="popup-btn-skip" id="popupBtnPlusTard">Plus tard</button>
-    </div>
-  </div>
+<div class="popup-ov" id="popupNotesALire">
+  <div class="popup-box"><div class="popup-in">
+    <div class="popup-icon">&#128218;</div>
+    <div class="popup-title">Notes à réviser !</div>
+    <div class="popup-txt"><span class="popup-num" id="popupCount">0</span>note(s) attendent votre révision</div>
+    <button class="popup-go" id="popupBtnLire">Réviser maintenant</button>
+    <button class="popup-skip" id="popupBtnPlusTard">Plus tard</button>
+  </div></div>
 </div>
 
-<!-- Modal: Nouveau thème -->
-<div class="modal" id="modalAddCategory">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title">➕ Nouveau thème</div>
-      <button class="modal-close" onclick="closeModal('modalAddCategory')">×</button>
-    </div>
-    <form id="formAddCategory">
-      <div class="form-group">
-        <label class="form-label">Nom du thème</label>
-        <input type="text" class="form-input" id="categoryName" placeholder="Ex: Histoire, Art, Sport..." required>
-      </div>
-      <button type="submit" class="btn btn-primary">Créer</button>
-    </form>
-  </div>
-</div>
+<!-- Modals -->
+<div class="modal" id="modalAddCategory"><div class="modal-content">
+  <div class="modal-header"><div class="modal-title">&#10133; Nouveau thème</div><button class="modal-close" onclick="closeModal('modalAddCategory')">×</button></div>
+  <form id="formAddCategory">
+    <div class="form-group"><label class="form-label">Nom du thème</label><input type="text" class="form-input" id="categoryName" placeholder="Ex: Histoire, Art, Sport..." required></div>
+    <button type="submit" class="btn btn-primary">Créer</button>
+  </form>
+</div></div>
 
-<!-- Modal: Nouvelle note -->
-<div class="modal" id="modalAddNote">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title">➕ Nouvelle note</div>
-      <button class="modal-close" onclick="closeModal('modalAddNote')">×</button>
-    </div>
-    <form id="formAddNote">
-      <div class="form-group">
-        <label class="form-label">Catégorie</label>
-        <select class="form-select" id="noteCategorySelect" required>
-          <option value="">Sélectionnez une catégorie</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Titre</label>
-        <input type="text" class="form-input" id="noteTitle" placeholder="Titre de la note" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Contenu</label>
-        <textarea class="form-textarea" id="noteContent" placeholder="Écrivez votre note ici..." required></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary">Créer</button>
-    </form>
-  </div>
-</div>
+<div class="modal" id="modalAddNote"><div class="modal-content">
+  <div class="modal-header"><div class="modal-title">&#10133; Nouvelle note</div><button class="modal-close" onclick="closeModal('modalAddNote')">×</button></div>
+  <form id="formAddNote">
+    <div class="form-group"><label class="form-label">Catégorie</label><select class="form-select" id="noteCategorySelect" required><option value="">Sélectionnez une catégorie</option></select></div>
+    <div class="form-group"><label class="form-label">Titre</label><input type="text" class="form-input" id="noteTitle" placeholder="Titre de la note" required></div>
+    <div class="form-group"><label class="form-label">Contenu</label><textarea class="form-textarea" id="noteContent" placeholder="Écrivez votre note ici..." required></textarea></div>
+    <button type="submit" class="btn btn-primary">Créer</button>
+  </form>
+</div></div>
 
-<!-- Modal: Modifier note -->
-<div class="modal" id="modalEditNote">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title">✏️ Modifier la note</div>
-      <button class="modal-close" onclick="closeModal('modalEditNote')">×</button>
-    </div>
-    <form id="formEditNote">
-      <input type="hidden" id="editNoteId">
-      <div class="form-group">
-        <label class="form-label">Catégorie</label>
-        <select class="form-select" id="editNoteCategorySelect" required>
-          <option value="">Sélectionnez une catégorie</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Titre</label>
-        <input type="text" class="form-input" id="editNoteTitle" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Contenu</label>
-        <textarea class="form-textarea" id="editNoteContent" required></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary">Modifier</button>
-      <button type="button" class="btn btn-secondary" style="margin-top:8px;background:#EF4444;color:white" id="deleteNoteBtn">🗑️ Supprimer</button>
-    </form>
-  </div>
-</div>
+<div class="modal" id="modalEditNote"><div class="modal-content">
+  <div class="modal-header"><div class="modal-title">&#9999;&#65039; Modifier la note</div><button class="modal-close" onclick="closeModal('modalEditNote')">×</button></div>
+  <form id="formEditNote">
+    <input type="hidden" id="editNoteId">
+    <div class="form-group"><label class="form-label">Catégorie</label><select class="form-select" id="editNoteCategorySelect" required><option value="">Sélectionnez une catégorie</option></select></div>
+    <div class="form-group"><label class="form-label">Titre</label><input type="text" class="form-input" id="editNoteTitle" required></div>
+    <div class="form-group"><label class="form-label">Contenu</label><textarea class="form-textarea" id="editNoteContent" required></textarea></div>
+    <button type="submit" class="btn btn-primary">Modifier</button>
+    <button type="button" class="btn btn-secondary" style="margin-top:8px;background:#EF4444;color:white" id="deleteNoteBtn">&#128465;&#65039; Supprimer</button>
+  </form>
+</div></div>
 
-<!-- Modal: Nouveau lien -->
-<div class="modal" id="modalAddLink">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title">➕ Nouveau lien</div>
-      <button class="modal-close" onclick="closeModal('modalAddLink')">×</button>
-    </div>
-    <form id="formAddLink">
-      <div class="form-group">
-        <label class="form-label">Titre</label>
-        <input type="text" class="form-input" id="linkTitle" placeholder="Nom du lien" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">URL</label>
-        <input type="url" class="form-input" id="linkUrl" placeholder="https://..." required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Note (optionnel)</label>
-        <textarea class="form-textarea" id="linkNote" placeholder="Ajouter une description..."></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary">Créer</button>
-    </form>
-  </div>
-</div>
+<div class="modal" id="modalAddLink"><div class="modal-content">
+  <div class="modal-header"><div class="modal-title">&#10133; Nouveau lien</div><button class="modal-close" onclick="closeModal('modalAddLink')">×</button></div>
+  <form id="formAddLink">
+    <div class="form-group"><label class="form-label">Titre</label><input type="text" class="form-input" id="linkTitle" placeholder="Nom du lien" required></div>
+    <div class="form-group"><label class="form-label">URL</label><input type="url" class="form-input" id="linkUrl" placeholder="https://..." required></div>
+    <div class="form-group"><label class="form-label">Note (optionnel)</label><textarea class="form-textarea" id="linkNote" placeholder="Description..."></textarea></div>
+    <button type="submit" class="btn btn-primary">Créer</button>
+  </form>
+</div></div>
 
-<!-- Modal: Modifier thème -->
-<div class="modal" id="modalEditCategory">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title">✏️ Modifier le thème</div>
-      <button class="modal-close" onclick="closeModal('modalEditCategory')">×</button>
-    </div>
-    <form id="formEditCategory">
-      <input type="hidden" id="editCategoryId">
-      <div class="form-group">
-        <label class="form-label">Nom du thème</label>
-        <input type="text" class="form-input" id="editCategoryName" required>
-      </div>
-      <button type="submit" class="btn btn-primary">Modifier</button>
-      <button type="button" class="btn btn-secondary" style="margin-top:8px;background:#EF4444;color:white" id="deleteCategoryBtn">🗑️ Supprimer</button>
-    </form>
-  </div>
-</div>
+<div class="modal" id="modalEditCategory"><div class="modal-content">
+  <div class="modal-header"><div class="modal-title">&#9999;&#65039; Modifier le thème</div><button class="modal-close" onclick="closeModal('modalEditCategory')">×</button></div>
+  <form id="formEditCategory">
+    <input type="hidden" id="editCategoryId">
+    <div class="form-group"><label class="form-label">Nom du thème</label><input type="text" class="form-input" id="editCategoryName" required></div>
+    <button type="submit" class="btn btn-primary">Modifier</button>
+    <button type="button" class="btn btn-secondary" style="margin-top:8px;background:#EF4444;color:white" id="deleteCategoryBtn">&#128465;&#65039; Supprimer</button>
+  </form>
+</div></div>
 
-<!-- Modal: Aide -->
-<div class="modal" id="modalHelp">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title">Aide</div>
-      <button class="modal-close" onclick="closeModal('modalHelp')">×</button>
-    </div>
-    <div class="help-content">
-      <h3>🧠 Répétition espacée</h3>
-      <p style="margin-bottom:12px">Etchnote optimise votre mémorisation.</p>
-      <p style="margin-bottom:8px;color:#856404;font-weight:600;font-size:13px">⚠️ MODE TEST actif</p>
-      <ul>
-        <li><strong>Niveau 1 :</strong> 24 sec <em style="color:var(--text-lt)">(= 24h)</em></li>
-        <li><strong>Niveau 2 :</strong> 48 sec <em style="color:var(--text-lt)">(= 48h)</em></li>
-        <li><strong>Niveau 3 :</strong> 7 min <em style="color:var(--text-lt)">(= 7 jours)</em></li>
-        <li><strong>Niveau 4 :</strong> 15 min <em style="color:var(--text-lt)">(= 15 jours)</em></li>
-        <li><strong>Niveau 5 :</strong> 30 min <em style="color:var(--text-lt)">(= 1 mois)</em></li>
-        <li><strong>Niveau 6 :</strong> 60 min <em style="color:var(--text-lt)">(= 2 mois)</em></li>
-        <li><strong>Niveau 7 :</strong> 120 min <em style="color:var(--text-lt)">(= 4 mois)</em></li>
-        <li><strong>Niveau 8 :</strong> 180 min <em style="color:var(--text-lt)">(= 6 mois)</em></li>
-      </ul>
-    </div>
-    <div class="help-content">
-      <h3>📱 Navigation</h3>
-      <ul>
-        <li><strong>Thèmes :</strong> Vos catégories de notes</li>
-        <li><strong>Aléatoire :</strong> Note surprise</li>
-        <li><strong>À lire :</strong> Notes à réviser</li>
-        <li><strong>Rapide :</strong> Tableau blanc</li>
-        <li><strong>Liens :</strong> Vos ressources web</li>
-      </ul>
-    </div>
+<div class="modal" id="modalHelp"><div class="modal-content">
+  <div class="modal-header"><div class="modal-title">Aide</div><button class="modal-close" onclick="closeModal('modalHelp')">×</button></div>
+  <div class="help-content">
+    <h3>&#129504; Répétition espacée</h3>
+    <p style="margin-bottom:12px">Etchnote optimise votre mémorisation grâce à la répétition espacée.</p>
+    <p style="margin-bottom:8px;color:#856404;font-weight:600;font-size:13px">&#9888;&#65039; MODE TEST actif</p>
+    <ul>
+      <li><strong>Niveau 1 :</strong> 24 sec <em style="color:#A08860">(= 24h)</em></li>
+      <li><strong>Niveau 2 :</strong> 48 sec <em style="color:#A08860">(= 48h)</em></li>
+      <li><strong>Niveau 3 :</strong> 7 min <em style="color:#A08860">(= 7 jours)</em></li>
+      <li><strong>Niveau 4 :</strong> 15 min <em style="color:#A08860">(= 15 jours)</em></li>
+      <li><strong>Niveau 5 :</strong> 30 min <em style="color:#A08860">(= 1 mois)</em></li>
+      <li><strong>Niveau 6 :</strong> 60 min <em style="color:#A08860">(= 2 mois)</em></li>
+      <li><strong>Niveau 7 :</strong> 120 min <em style="color:#A08860">(= 4 mois)</em></li>
+      <li><strong>Niveau 8 :</strong> 180 min <em style="color:#A08860">(= 6 mois)</em></li>
+    </ul>
   </div>
-</div>
+  <div class="help-content">
+    <h3>&#128241; Navigation</h3>
+    <ul>
+      <li><strong>Thèmes :</strong> Vos catégories de notes</li>
+      <li><strong>Aléatoire :</strong> Note surprise</li>
+      <li><strong>À lire :</strong> Notes à réviser</li>
+      <li><strong>Rapide :</strong> Tableau blanc</li>
+      <li><strong>Liens :</strong> Vos ressources web</li>
+    </ul>
+  </div>
+</div></div>
 
 <script src="app.js"></script>
 </body>
