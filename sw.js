@@ -1,7 +1,7 @@
 // Service Worker pour Etchnote
 // Permet le fonctionnement hors ligne et la mise en cache
 
-const CACHE_NAME = 'etchnote-v2';
+const CACHE_NAME = 'etchnote-v3';
 const urlsToCache = [
   '/',
   '/index.html',
