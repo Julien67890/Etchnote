@@ -148,6 +148,8 @@ body.has-fab .app-content{padding-bottom:calc(var(--nav-h) + var(--safe-b) + 92p
 /* Statistiques */
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-3);margin-top:var(--sp-3)}
 .stat{display:flex;align-items:baseline;gap:var(--sp-2);justify-content:center;padding:var(--sp-3);border:1px dashed var(--line);border-radius:var(--r-md);background:rgba(255,250,240,.45)}
+.stat{min-height:var(--touch);width:100%;color:inherit;font:inherit}
+.stat:active{background:var(--parch-deep)}
 .stat-value{font-family:var(--font-title);font-size:26px;font-weight:600;color:var(--leather);line-height:1}
 .stat-label{font-size:13px;color:var(--soft);font-weight:500}
 
@@ -163,6 +165,7 @@ body.has-fab .app-content{padding-bottom:calc(var(--nav-h) + var(--safe-b) + 92p
 /* ---------- Assistant IA ---------- */
 .stack>*+*{margin-top:var(--sp-3)}
 .pick-list{display:grid;gap:var(--sp-2)}
+.pick-list.scroll{max-height:46vh;overflow-y:auto;padding:2px}
 .pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;min-height:var(--touch);padding:12px 14px;text-align:left;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(255,250,240,.7);color:var(--deep)}
 .pick strong{font-size:16px;font-weight:600}
 .pick span{font-size:13.5px;color:var(--soft)}
@@ -179,6 +182,9 @@ body.has-fab .app-content{padding-bottom:calc(var(--nav-h) + var(--safe-b) + 92p
 details.setup{margin-top:var(--sp-4);font-size:14px;color:var(--soft)}
 details.setup summary{min-height:var(--touch);display:flex;align-items:center;cursor:pointer;color:var(--copper-text);font-weight:600}
 details.setup ol{padding-left:20px;line-height:1.6}
+details.setup li a{color:var(--copper-text);font-weight:600;display:inline-flex;align-items:center;gap:4px;min-height:32px}
+.origin-row{display:flex;align-items:center;gap:var(--sp-2);margin-top:8px;flex-wrap:wrap}
+.origin-row code{flex:1 1 180px;min-width:0;overflow-wrap:anywhere;padding:8px 10px;border-radius:var(--r-md);background:rgba(255,250,240,.9);border:1px solid var(--line);color:var(--deep);font-size:13px}
 details.setup li{margin-bottom:6px}
 .form-hint a{color:var(--copper-text);font-weight:600}
 
@@ -212,6 +218,7 @@ a.btn{text-decoration:none}
 .seg{display:flex;gap:var(--sp-2);overflow-x:auto;padding:2px 0 var(--sp-3);scrollbar-width:none}
 .seg::-webkit-scrollbar{display:none}
 .seg-btn{flex:1 0 auto;min-height:var(--touch);padding:8px 18px;border-radius:999px;border:1px solid var(--line);background:rgba(255,250,240,.6);color:var(--soft);font-weight:600;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);white-space:nowrap}
+.seg.fit .seg-btn{flex:1 1 0;min-width:0;padding:8px 6px}
 .seg-btn[aria-selected="true"]{background:var(--leather);border-color:var(--deep);color:var(--ivory)}
 .seg-btn .count{min-width:24px;padding:0 7px;border-radius:999px;background:rgba(168,95,50,.2);font-size:12px;line-height:22px;text-align:center}
 .seg-btn[aria-selected="true"] .count{background:rgba(248,238,220,.22)}
@@ -396,6 +403,7 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
     <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
     <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.5 5.2 5.7.8-4.1 4 1 5.6L12 16.4 6.9 19.1l1-5.6-4.1-4 5.7-.8z"/></symbol>
     <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.4"/><circle cx="8" cy="17" r="2.4"/></symbol>
+    <symbol id="i-learn" viewBox="0 0 24 24"><path d="M2.5 9.5 12 5l9.5 4.5L12 14z"/><path d="M6.5 11.8V16c0 1.2 2.4 2.5 5.5 2.5s5.5-1.3 5.5-2.5v-4.2"/><path d="M21.5 9.5V15"/></symbol>
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.5l1.9 5.6 5.6 1.9-5.6 1.9L12 18.5l-1.9-5.6L4.5 11l5.6-1.9z"/><path d="M19 3.5v3M17.5 5h3M5 17.5v3M3.5 19h3"/></symbol>
     <symbol id="i-orn" viewBox="0 0 140 14"><path d="M2 7h54M84 7h54" stroke-width="1"/><path d="M70 1.5l2.6 5.5L70 12.5 67.4 7z" stroke-width="1.2"/><circle cx="62" cy="7" r="1.2"/><circle cx="78" cy="7" r="1.2"/></symbol>
   </defs>
@@ -430,8 +438,8 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
   <section class="screen active" id="screenHome" aria-label="Accueil">
     <div id="homeReview"></div>
     <div class="stats">
-      <div class="stat"><span class="stat-value" id="statCategories">0</span><span class="stat-label">Thèmes</span></div>
-      <div class="stat"><span class="stat-value" id="statNotes">0</span><span class="stat-label">Notes</span></div>
+      <button type="button" class="stat" id="statCategoriesBtn" aria-label="Voir les thèmes"><span class="stat-value" id="statCategories">0</span><span class="stat-label">Thèmes</span></button>
+      <button type="button" class="stat" id="statNotesBtn" aria-label="Voir les notes"><span class="stat-value" id="statNotes">0</span><span class="stat-label">Notes</span></button>
     </div>
     <div class="section-head">
       <h2>Notes récentes</h2>
@@ -517,7 +525,7 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
 
 <nav class="bottom-nav" aria-label="Navigation principale">
   <button class="nav-item active" data-screen="screenHome" aria-current="page"><svg class="ico"><use href="#i-home"/></svg><span class="nav-label">Accueil</span></button>
-  <button class="nav-item" data-screen="screenNotes"><svg class="ico"><use href="#i-notes"/></svg><span class="nav-label">Notes</span></button>
+  <button class="nav-item" data-screen="screenNotes"><svg class="ico"><use href="#i-learn"/></svg><span class="nav-label">Notes</span></button>
   <button class="nav-item" data-screen="screenThemes"><svg class="ico"><use href="#i-themes"/></svg><span class="nav-label">Thèmes</span></button>
   <button class="nav-item" data-screen="screenToRead"><svg class="ico"><use href="#i-review"/></svg><span class="nav-label">Révisions</span></button>
   <button class="nav-item" data-screen="screenQuick"><svg class="ico"><use href="#i-board"/></svg><span class="nav-label">Tableau</span></button>
@@ -592,7 +600,8 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
   <div class="help-block">
     <h3>Assistant IA (Gemini)</h3>
     <div class="form-group"><label class="form-label" for="setGeminiKey">Clé API Gemini</label><input type="password" class="form-input" id="setGeminiKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <p class="form-hint">Gratuite sur <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>. Elle reste uniquement sur cet appareil.</p></div>
+      <a class="btn btn-secondary" style="margin-top:10px" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer"><svg class="ico" aria-hidden="true"><use href="#i-external"/></svg>Obtenir ma clé gratuite</a>
+      <p class="form-hint">Connectez-vous avec votre compte Google, créez la clé, copiez-la ici. Elle reste uniquement sur cet appareil.</p></div>
     <div class="form-group"><label class="form-label" for="setGeminiModel">Modèle</label><input type="text" class="form-input" id="setGeminiModel" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
     <p class="notice">Offre gratuite : Google peut réutiliser les textes envoyés pour améliorer ses produits. N'y mettez rien de confidentiel.</p>
     <button type="button" class="btn btn-secondary" id="testGeminiBtn">Tester la clé</button>
@@ -610,16 +619,17 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
       </div>
       <input type="file" id="importFile" accept="application/json,.json" hidden aria-label="Fichier de sauvegarde à importer">
     </div>
-    <details class="setup">
-      <summary>Comment obtenir l'identifiant client Google ?</summary>
-      <ol>
-        <li>Sur <strong>console.cloud.google.com</strong>, créez un projet.</li>
-        <li>« API et services » → « Bibliothèque » : activez <strong>Google Drive API</strong>.</li>
-        <li>« Écran de consentement OAuth » : type « Externe », nom Etchnote, puis ajoutez votre adresse Gmail comme « utilisateur test ».</li>
-        <li>« Identifiants » → « Créer des identifiants » → « ID client OAuth » → « Application Web ». Dans « Origines JavaScript autorisées », ajoutez <strong>https://julien67890.github.io</strong>.</li>
-        <li>Copiez l'identifiant (il finit par <em>.apps.googleusercontent.com</em>) dans le champ ci-dessus.</li>
+    <details class="setup" id="setupDetails">
+      <summary>Créer mon identifiant client Google (5 étapes)</summary>
+      <ol class="steps">
+        <li><a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener noreferrer">Créer un projet <svg class="ico ico-sm" aria-hidden="true"><use href="#i-external"/></svg></a> (nom libre, par exemple Etchnote).</li>
+        <li><a href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener noreferrer">Activer Google Drive API <svg class="ico ico-sm" aria-hidden="true"><use href="#i-external"/></svg></a> : bouton « Activer ». Vérifiez que votre projet est sélectionné en haut de la page.</li>
+        <li><a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener noreferrer">Configurer l'écran de consentement <svg class="ico ico-sm" aria-hidden="true"><use href="#i-external"/></svg></a> : type « Externe », nom Etchnote, puis ajoutez votre adresse Gmail dans « Utilisateurs test ».</li>
+        <li><a href="https://console.cloud.google.com/apis/credentials/oauthclient" target="_blank" rel="noopener noreferrer">Créer l'ID client OAuth <svg class="ico ico-sm" aria-hidden="true"><use href="#i-external"/></svg></a> : type « Application Web ». Dans « Origines JavaScript autorisées », collez l'adresse ci-dessous.
+          <div class="origin-row"><code id="originValue"></code><button type="button" class="btn btn-secondary btn-inline" id="copyOriginBtn">Copier</button></div></li>
+        <li>Copiez l'ID client affiché (il finit par <em>.apps.googleusercontent.com</em>) dans le champ ci-dessus. Le « code secret » n'est pas nécessaire.</li>
       </ol>
-      <p class="form-hint">Seul le fichier « Etchnote - sauvegarde.json » créé par l'application est accessible. Le reste de votre Drive reste invisible pour elle.</p>
+      <p class="form-hint">À la première connexion, Google affiche « application non validée » : choisissez « Paramètres avancés » puis « Accéder à Etchnote ». Seul le fichier « Etchnote - sauvegarde.json » créé par l'application est accessible, le reste de votre Drive reste invisible pour elle.</p>
     </details>
   </div>
 </div></div>

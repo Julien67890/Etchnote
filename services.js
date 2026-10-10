@@ -144,11 +144,15 @@ class GeminiService {
     }
 
     /** Contexte commun : niveau, objectif et notes déjà prises. */
-    static context({ topic, level, goal, existing }) {
+    static context({ topic, level, goal, existing, focus }) {
         const lines = [`Sujet : ${topic}`, `Niveau de l'apprenant : ${level || 'débutant'}`];
         if (goal) lines.push(`Objectif de l'apprenant : ${goal}`);
+        if (focus) {
+            const body = String(focus.contenu || '').replace(/\s+/g, ' ').slice(0, 800);
+            lines.push(`Note à approfondir (l'apprenant la connaît déjà, va plus loin) : ${focus.titre}${body ? ' : ' + body : ''}`);
+        }
         if (existing && existing.length) {
-            lines.push("Notes déjà prises sur ce thème (à ne pas répéter, mais à prolonger) :");
+            lines.push(focus ? "Autres notes du même thème (à ne pas répéter) :" : "Notes déjà prises sur ce thème (à ne pas répéter, mais à prolonger) :");
             existing.slice(0, 25).forEach(n => {
                 const extract = String(n.contenu || '').replace(/\s+/g, ' ').slice(0, 160);
                 lines.push(`- ${n.titre}${extract ? ' : ' + extract : ''}`);
@@ -162,8 +166,8 @@ class GeminiService {
         const prompt = [
             this.context(ctx),
             '',
-            ctx.existing && ctx.existing.length
-                ? "Propose 5 pistes distinctes pour approfondir ce thème, en prolongeant ce que l'apprenant sait déjà."
+            (ctx.existing && ctx.existing.length) || ctx.focus
+                ? "Propose 5 pistes distinctes pour approfondir ce sujet, en prolongeant ce que l'apprenant sait déjà."
                 : 'Propose 5 pistes distinctes et progressives pour apprendre ce sujet, de la plus fondamentale à la plus avancée.',
             alreadyShown.length ? `Pistes déjà proposées, à ne pas répéter : ${alreadyShown.join(' ; ')}` : '',
             'Format exact : {"pistes":[{"titre":"8 mots maximum","description":"une phrase de 20 mots maximum"}]}'

@@ -420,6 +420,8 @@ class AppController {
         $('shortcutRandom').addEventListener('click', () => this.navigateTo('screenRandom'));
         $('shortcutLinks').addEventListener('click', () => this.navigateTo('screenLinks'));
         $('shortcutLearn').addEventListener('click', () => this.openLearn());
+        $('statCategoriesBtn').addEventListener('click', () => this.navigateTo('screenThemes'));
+        $('statNotesBtn').addEventListener('click', () => this.navigateTo('screenNotes'));
         $('settingsBtn').addEventListener('click', () => this.openSettings());
 
         // Réglages : enregistrement immédiat
@@ -436,6 +438,7 @@ class AppController {
         $('exportBtn').addEventListener('click', () => this.exportFile());
         $('importBtn').addEventListener('click', () => $('importFile').click());
         $('importFile').addEventListener('change', (e) => this.importFile(e.target));
+        $('copyOriginBtn').addEventListener('click', () => this.copyOrigin());
 
         // Filtres « Mes notes » et onglets « Révisions »
         document.querySelectorAll('.seg-btn[data-filter]').forEach(btn => {
@@ -1166,8 +1169,9 @@ class AppController {
     freshLearn(extra = {}) {
         return Object.assign({
             step: 'start',       // start → angles → lesson → saved
-            mode: 'new',         // new : nouveau thème · deepen : thème existant
-            topic: '', catId: null, catName: null,
+            mode: 'new',         // new : nouveau thème · deepen : approfondir l'existant
+            target: 'theme',     // en mode deepen : theme (un thème entier) ou note (une note précise)
+            topic: '', catId: null, catName: null, noteId: null, focus: null, catLabel: '',
             level: SettingsService.get('level', 'débutant'),
             goal: '', existing: [],
             angles: [], shown: [], angle: null,
@@ -1221,6 +1225,20 @@ class AppController {
         this.renderLearn();
     }
 
+    learnTarget(target) {
+        const L = this.learn;
+        if (!L || L.busy) return;
+        L.target = target; L.error = '';
+        this.renderLearn();
+    }
+
+    learnPickNote(id) {
+        const L = this.learn;
+        if (!L || L.busy) return;
+        L.noteId = id; L.error = '';
+        this.renderLearn();
+    }
+
     learnLevel(level) {
         const L = this.learn;
         if (!L || L.busy) return;
@@ -1238,11 +1256,24 @@ class AppController {
             L.topic = (L.topic || '').trim();
             if (!L.topic) { L.error = 'Indiquez ce que vous voulez apprendre.'; return this.renderLearn(); }
             L.existing = [];
+            L.focus = null;
             L.catName = null;
+        } else if (L.target === 'note') {
+            const note = L.noteId ? await this.db.getNote(L.noteId) : null;
+            if (!note) { L.error = 'Choisissez la note à approfondir.'; return this.renderLearn(); }
+            const cat = await this.db.getCategory(note.categorieId);
+            if (!cat) { L.error = 'Le thème de cette note est introuvable.'; return this.renderLearn(); }
+            L.topic = note.titre;
+            L.focus = note;
+            L.catId = cat.id;
+            L.catLabel = cat.nom;
+            L.existing = (await this.db.getNotesByCategory(cat.id)).filter(n => n.id !== note.id);
         } else {
             const cat = L.catId ? await this.db.getCategory(L.catId) : null;
             if (!cat) { L.error = 'Choisissez un thème à approfondir.'; return this.renderLearn(); }
             L.topic = cat.nom;
+            L.focus = null;
+            L.catLabel = cat.nom;
             L.existing = await this.db.getNotesByCategory(cat.id);
         }
         L.shown = [];
@@ -1252,7 +1283,7 @@ class AppController {
     learnLoadAngles(more) {
         return this.learnRun('Gemini cherche des pistes…', async (L) => {
             const angles = await GeminiService.suggestAngles(
-                { topic: L.topic, level: L.level, goal: L.goal, existing: L.existing },
+                { topic: L.topic, level: L.level, goal: L.goal, existing: L.existing, focus: L.focus },
                 more ? L.shown : []
             );
             if (this.learn !== L) return;
@@ -1282,7 +1313,7 @@ class AppController {
     learnLoadLesson() {
         return this.learnRun('Gemini rédige la fiche…', async (L) => {
             const lesson = await GeminiService.makeLesson(
-                { topic: L.topic, level: L.level, goal: L.goal, existing: L.existing }, L.angle
+                { topic: L.topic, level: L.level, goal: L.goal, existing: L.existing, focus: L.focus }, L.angle
             );
             if (this.learn !== L) return;
             L.draft = { titre: lesson.titre, contenu: GeminiService.noteText(lesson) };
@@ -1314,6 +1345,10 @@ class AppController {
             const noteId = await this.db.addNote({ categorieId: catId, titre, contenu });
             L.savedNote = { id: noteId, titre, catName };
             L.mode = 'deepen';
+            L.target = 'theme';
+            L.focus = null;
+            L.topic = catName;
+            L.catLabel = catName;
             L.catId = catId;
             L.step = 'saved';
             L.error = '';
@@ -1329,6 +1364,7 @@ class AppController {
         const L = this.learn;
         if (!L || L.busy) return;
         L.existing = await this.db.getNotesByCategory(L.catId);
+        L.focus = null;
         L.shown = [];
         L.angle = null;
         return this.learnLoadAngles(false);
@@ -1358,6 +1394,10 @@ class AppController {
             notes.forEach(n => { counts[n.categorieId] = (counts[n.categorieId] || 0) + 1; });
             const levels = ['débutant', 'intermédiaire', 'avancé'];
 
+            const catName = {};
+            cats.forEach(c => { catName[c.id] = c.nom; });
+            const sortedNotes = [...notes].sort((x, y) => new Date(y.dateCreation) - new Date(x.dateCreation));
+
             let target;
             if (L.mode === 'new') {
                 target = `<div class="form-group"><label class="form-label" for="learnTopic">Que voulez-vous apprendre ?</label>
@@ -1365,11 +1405,25 @@ class AppController {
             } else if (!cats.length) {
                 target = `<p class="notice">Vous n'avez pas encore de thème. Passez sur « Nouveau thème » pour en créer un.</p>`;
             } else {
-                target = `<div class="form-group"><span class="form-label" id="lblCat">Thème à approfondir</span>
-                    <div class="pick-list" role="group" aria-labelledby="lblCat">${cats.map(c => `
-                        <button type="button" class="pick ${c.id === L.catId ? 'sel' : ''}" aria-pressed="${c.id === L.catId}" onclick="app.learnPickCat(${Number(c.id)})">
-                            <strong>${e(c.nom)}</strong><span>${counts[c.id] || 0} note${(counts[c.id] || 0) > 1 ? 's' : ''}</span></button>`).join('')}
-                    </div>${L.catId ? '<p class="form-hint">Les titres et extraits des notes de ce thème sont envoyés à Gemini pour éviter les répétitions.</p>' : ''}</div>`;
+                const sub = `<div class="seg fit" role="tablist" aria-label="Approfondir quoi ?">
+                        <button type="button" class="seg-btn" role="tab" aria-selected="${L.target === 'theme'}" onclick="app.learnTarget('theme')">Un thème</button>
+                        <button type="button" class="seg-btn" role="tab" aria-selected="${L.target === 'note'}" onclick="app.learnTarget('note')">Une note</button>
+                    </div>`;
+                if (L.target === 'note') {
+                    target = sub + (sortedNotes.length
+                        ? `<div class="form-group"><span class="form-label" id="lblNote">Note à approfondir</span>
+                            <div class="pick-list scroll" role="group" aria-labelledby="lblNote">${sortedNotes.map(n => `
+                                <button type="button" class="pick ${n.id === L.noteId ? 'sel' : ''}" aria-pressed="${n.id === L.noteId}" onclick="app.learnPickNote(${Number(n.id)})">
+                                    <strong>${e(n.titre)}</strong><span>${e(catName[n.categorieId] || 'Sans thème')}</span></button>`).join('')}
+                            </div>${L.noteId ? '<p class="form-hint">Le contenu de cette note et les titres des autres notes du thème sont envoyés à Gemini.</p>' : ''}</div>`
+                        : `<p class="notice">Vous n'avez pas encore de note. Choisissez « Un thème » ou « Nouveau thème ».</p>`);
+                } else {
+                    target = sub + `<div class="form-group"><span class="form-label" id="lblCat">Thème à approfondir</span>
+                        <div class="pick-list" role="group" aria-labelledby="lblCat">${cats.map(c => `
+                            <button type="button" class="pick ${c.id === L.catId ? 'sel' : ''}" aria-pressed="${c.id === L.catId}" onclick="app.learnPickCat(${Number(c.id)})">
+                                <strong>${e(c.nom)}</strong><span>${counts[c.id] || 0} note${(counts[c.id] || 0) > 1 ? 's' : ''}</span></button>`).join('')}
+                        </div>${L.catId ? '<p class="form-hint">Les titres et extraits des notes de ce thème sont envoyés à Gemini pour éviter les répétitions.</p>' : ''}</div>`;
+                }
             }
 
             html = `
@@ -1377,13 +1431,13 @@ class AppController {
                 <p class="learn-sub">Choisissez un thème, l'assistant propose des pistes, puis rédige une fiche à mémoriser.</p>
                 ${keyNotice}${errorNotice}
                 <form id="formLearn" onsubmit="event.preventDefault();app.learnStart()">
-                    <div class="seg" role="tablist" aria-label="Type de demande">
+                    <div class="seg fit" role="tablist" aria-label="Type de demande">
                         <button type="button" class="seg-btn" role="tab" aria-selected="${L.mode === 'new'}" onclick="app.learnMode('new')">Nouveau thème</button>
                         <button type="button" class="seg-btn" role="tab" aria-selected="${L.mode === 'deepen'}" onclick="app.learnMode('deepen')">Approfondir</button>
                     </div>
                     ${target}
                     <div class="form-group"><span class="form-label" id="lblLevel">Votre niveau</span>
-                        <div class="seg" role="tablist" aria-labelledby="lblLevel">${levels.map(l => `
+                        <div class="seg fit" role="tablist" aria-labelledby="lblLevel">${levels.map(l => `
                             <button type="button" class="seg-btn" role="tab" aria-selected="${L.level === l}" onclick="app.learnLevel('${l}')">${l.charAt(0).toUpperCase() + l.slice(1)}</button>`).join('')}
                         </div></div>
                     <div class="form-group"><label class="form-label" for="learnGoal">Votre objectif <span class="opt">(facultatif)</span></label>
@@ -1393,7 +1447,7 @@ class AppController {
         } else if (L.step === 'angles') {
             html = `
                 <h2 class="learn-title">Par où commencer ?</h2>
-                <p class="learn-sub">Thème : <strong>${e(L.topic)}</strong> · niveau ${e(L.level)}</p>
+                <p class="learn-sub">${L.focus ? 'Note' : 'Thème'} : <strong>${e(L.topic)}</strong>${L.focus ? ' (thème ' + e(L.catLabel) + ')' : ''} · niveau ${e(L.level)}</p>
                 ${errorNotice}
                 <div class="pick-list">${L.angles.map((an, i) => `
                     <button type="button" class="pick" onclick="app.learnPickAngle(${i})"><strong>${e(an.titre)}</strong>${an.description ? `<span>${e(an.description)}</span>` : ''}</button>`).join('')}
@@ -1412,7 +1466,7 @@ class AppController {
                 ? `<div class="form-group"><label class="form-label" for="learnCatName">Thème</label>
                     <input type="text" class="form-input" id="learnCatName" maxlength="60" value="${a(L.catName != null ? L.catName : L.topic)}" autocomplete="off" oninput="app.learn.catName=this.value">
                     <p class="form-hint">Le thème est créé s'il n'existe pas encore.</p></div>`
-                : `<p class="learn-sub">Thème : <strong>${e(L.topic)}</strong></p>`;
+                : `<p class="learn-sub">Thème : <strong>${e(L.catLabel || L.topic)}</strong>${L.focus ? ' · la fiche prolonge la note « ' + e(L.topic) + ' »' : ''}</p>`;
             html = `
                 <h2 class="learn-title">Votre fiche</h2>
                 <p class="notice">Généré par IA : relisez et vérifiez avant de mémoriser. Vous pouvez tout modifier.</p>
@@ -1458,8 +1512,19 @@ class AppController {
         model.placeholder = DEFAULT_GEMINI_MODEL;
         document.getElementById('setGoogleClientId').value = SettingsService.get('googleClientId');
         this.updateBackupStatus();
+        document.getElementById('originValue').textContent = location.origin;
+        document.getElementById('setupDetails').open = !SettingsService.get('googleClientId');
         this.openModal('modalSettings');
         if (SettingsService.get('googleClientId')) DriveService.preload().catch(() => {});
+    }
+
+    async copyOrigin() {
+        try {
+            await navigator.clipboard.writeText(location.origin);
+            this.toast('Adresse copiée');
+        } catch (err) {
+            this.toast("Copie impossible : sélectionnez l'adresse à la main.", true);
+        }
     }
 
     updateBackupStatus(text) {
