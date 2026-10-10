@@ -1,15 +1,15 @@
 // Service Worker pour Etchnote
 // Permet le fonctionnement hors ligne et la mise en cache
 
-const CACHE_NAME = 'etchnote-v3';
+const CACHE_NAME = 'etchnote-v4';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/app.js',
-  '/manifest.json',
-  '/logo-etchnote.png',
-  '/icon-192.png',
-  '/icon-512.png'
+  './',
+  './index.html',
+  './app.js',
+  './manifest.json',
+  './logo-etchnote.png',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // Installation du Service Worker
@@ -70,7 +70,7 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() => {
         // En cas d'erreur, retourne une page hors ligne si elle existe
-        return caches.match('/index.html');
+        return caches.match('./index.html');
       })
   );
 });
