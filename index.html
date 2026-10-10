@@ -108,6 +108,7 @@ h1,h2,h3{font-family:var(--font-title);font-weight:600;line-height:1.2;color:var
 
 /* ---------- Contenu ---------- */
 .app-content{position:relative;z-index:5;max-width:720px;margin:0 auto;padding:var(--sp-4) var(--sp-4) calc(var(--nav-h) + var(--safe-b) + 28px)}
+body.kb-open .bottom-nav,body.kb-open .fab{display:none}
 body.has-fab .app-content{padding-bottom:calc(var(--nav-h) + var(--safe-b) + 92px)}
 .screen{display:none}
 .screen.active{display:block;animation:fadeIn .22s ease}
@@ -164,6 +165,8 @@ body.has-fab .app-content{padding-bottom:calc(var(--nav-h) + var(--safe-b) + 92p
 
 /* ---------- Assistant IA ---------- */
 .stack>*+*{margin-top:var(--sp-3)}
+.read-title{font-size:21px;margin-bottom:var(--sp-3)}
+.lesson-body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;font-size:16.5px}
 .angle-card h3{font-size:18px;margin-bottom:var(--sp-2)}
 .angle-text{font-size:15px;line-height:1.65;color:var(--deep);margin-bottom:var(--sp-3)}
 .angle-card{scroll-margin-top:90px;margin-bottom:0}
@@ -303,9 +306,9 @@ a.btn{text-decoration:none}
 .fab[hidden]{display:none}
 
 /* ---------- Fenêtres modales (feuilles) ---------- */
-.modal{display:none;position:fixed;inset:0;z-index:2000;background:rgba(40,23,15,.62);overflow-y:auto;overscroll-behavior:contain}
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:var(--kb,0px);z-index:2000;background:rgba(40,23,15,.62);overflow-y:auto;overscroll-behavior:contain}
 .modal.active{display:flex;align-items:flex-end;justify-content:center}
-.modal-content{position:relative;width:100%;max-width:560px;max-height:94vh;max-height:94dvh;overflow-y:auto;padding:var(--sp-4) var(--sp-4) calc(var(--sp-5) + var(--safe-b));
+.modal-content{position:relative;width:100%;max-width:560px;max-height:94vh;max-height:94dvh;max-height:min(94dvh,calc(var(--vvh,100dvh) - 8px));overflow-y:auto;padding:var(--sp-4) var(--sp-4) calc(var(--sp-5) + var(--safe-b));
   background:var(--paper),linear-gradient(180deg,#FBF3E2,var(--parch));background-color:var(--ivory);
   border:1px solid var(--line);border-bottom:none;border-radius:20px 20px 0 0;box-shadow:0 -14px 40px rgba(40,23,15,.4);animation:sheetUp .24s ease}
 @keyframes sheetUp{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}

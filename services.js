@@ -193,29 +193,21 @@ class GeminiService {
             '',
             'Rédige une fiche de mémorisation sur cette piste.',
             'Contraintes : 120 à 200 mots, texte brut. Structure : une phrase d\'introduction ; 3 à 5 points clés, chacun sur une ligne commençant par "• " ; une ligne "Exemple : …" ; une ligne "À retenir : …" (une seule phrase).',
-            'Ajoute ensuite 3 questions courtes de rappel actif, sans leur réponse.',
-            'Format exact : {"titre":"60 caractères maximum","contenu":"la fiche, avec \\n pour les retours à la ligne","questions":["…","…","…"]}'
+            'Format exact : {"titre":"60 caractères maximum","contenu":"la fiche, avec \\n pour les retours à la ligne"}'
         ].join('\n');
 
         const data = this.parseJson(await this.generate(prompt, { temperature: 0.6 }));
         const contenu = this.clean(data.contenu);
         if (!contenu) throw new GeminiError("La fiche reçue est vide. Réessayez.", 'parse');
-        const questions = (Array.isArray(data.questions) ? data.questions : [])
-            .map(q => this.clean(q)).filter(Boolean).slice(0, 5);
         return {
             titre: this.clean(data.titre || angle.titre).slice(0, 80) || angle.titre,
-            contenu,
-            questions
+            contenu
         };
     }
 
-    /** Texte final de la note (fiche + questions de test). */
+    /** Texte final de la note. */
     static noteText(lesson) {
-        let text = lesson.contenu;
-        if (lesson.questions && lesson.questions.length) {
-            text += '\n\nPour te tester :\n' + lesson.questions.map((q, i) => `${i + 1}. ${q}`).join('\n');
-        }
-        return text;
+        return lesson.contenu;
     }
 }
 

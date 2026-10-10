@@ -376,11 +376,14 @@ class AppController {
         this.toastTimer = null;
         this._confirmDone = null;
         this.learn = null;             // état de l'assistant IA
+        this.guardActive = false;      // entrée d'historique « garde » (bouton Retour du téléphone)
         this.backupBusy = false;
     }
 
     async init() {
         this.setupEventListeners();
+        this.setupBackButton();
+        this.setupKeyboardAvoidance();
         this.setupPopupListeners();
         try {
             await this.db.init();
@@ -508,6 +511,79 @@ class AppController {
         });
     }
 
+    // ===========================
+    // BOUTON RETOUR DU TÉLÉPHONE
+    // Hors accueil (ou fenêtre ouverte), une entrée d'historique « garde » est posée :
+    // un retour la consomme et remonte d'un niveau au lieu de quitter l'application.
+    // Sur l'accueil sans fenêtre ouverte, aucune garde : le retour quitte l'application.
+    // ===========================
+
+    setupBackButton() {
+        try { history.replaceState({ etch: 'base' }, ''); } catch (e) { /* historique indisponible */ }
+        window.addEventListener('popstate', () => this.onPopState());
+    }
+
+    needsGuard() {
+        return this.currentScreen !== 'screenHome'
+            || !!document.querySelector('.modal.active')
+            || document.getElementById('popupNotesALire').classList.contains('active');
+    }
+
+    syncGuard() {
+        if (this.guardActive || !this.needsGuard()) return;
+        try { history.pushState({ etch: 'guard' }, ''); this.guardActive = true; } catch (e) { /* ignoré */ }
+    }
+
+    onPopState() {
+        const hadGuard = this.guardActive;
+        this.guardActive = false;
+        if (!hadGuard) return; // retour au-delà de l'entrée de départ : géré par le navigateur
+
+        const open = [...document.querySelectorAll('.modal.active')];
+        if (open.length) {
+            this.closeModal(open[open.length - 1].id);
+        } else if (document.getElementById('popupNotesALire').classList.contains('active')) {
+            document.getElementById('popupNotesALire').classList.remove('active');
+        } else if (this.currentScreen === 'screenHome') {
+            history.back(); // garde périmée (fenêtre fermée à la main) : on quitte vraiment
+            return;
+        } else {
+            this.goBack();
+        }
+        this.syncGuard();
+    }
+
+    // ===========================
+    // CLAVIER VIRTUEL : les fenêtres restent visibles au-dessus du clavier
+    // ===========================
+
+    setupKeyboardAvoidance() {
+        const vv = window.visualViewport;
+        if (!vv) return;
+        const root = document.documentElement;
+        const update = () => {
+            const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+            root.style.setProperty('--kb', kb + 'px');
+            root.style.setProperty('--vvh', Math.round(vv.height) + 'px');
+            document.body.classList.toggle('kb-open', kb > 120);
+            if (kb > 120) this.revealFocused();
+        };
+        vv.addEventListener('resize', update);
+        vv.addEventListener('scroll', update);
+        update();
+        // Champ qui reçoit le focus : on le ramène dans la zone visible
+        document.addEventListener('focusin', (e) => {
+            if (e.target.matches('input,textarea,select')) setTimeout(() => this.revealFocused(), 320);
+        });
+    }
+
+    revealFocused() {
+        const el = document.activeElement;
+        if (el && el.matches && el.matches('input,textarea,select') && el.scrollIntoView) {
+            el.scrollIntoView({ block: 'center', behavior: 'auto' });
+        }
+    }
+
     setupPopupListeners() {
         document.getElementById('popupBtnLire').addEventListener('click', () => {
             document.getElementById('popupNotesALire').classList.remove('active');
@@ -524,6 +600,7 @@ class AppController {
         if (notesToRead.length > 0) {
             document.getElementById('popupCount').textContent = notesToRead.length;
             document.getElementById('popupNotesALire').classList.add('active');
+            this.syncGuard();
         }
     }
 
@@ -569,6 +646,7 @@ class AppController {
 
         this.updateFab();
         window.scrollTo(0, 0);
+        this.syncGuard();
     }
 
     navigateTo(screenId) {
@@ -662,6 +740,7 @@ class AppController {
         this.modalOpenedAt = Date.now();
         modal.classList.add('active');
         this.syncBodyLock();
+        this.syncGuard();
         const first = modal.querySelector('input:not([type=hidden]),select,textarea');
         const target = modalId === 'modalConfirm' ? document.getElementById('confirmCancel')
             : (first || modal.querySelector('button'));
@@ -1249,6 +1328,16 @@ class AppController {
         this.renderLearn();
     }
 
+    /** Modification de la fiche avant création : met à jour l'état et la lecture. */
+    learnEdit(field, value) {
+        const L = this.learn;
+        if (!L) return;
+        const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+        if (field === 'titre') { L.draft.titre = value; set('readTitle', value); }
+        else if (field === 'contenu') { L.draft.contenu = value; set('readBody', value); }
+        else if (field === 'cat') { L.catName = value; set('readCat', value); }
+    }
+
     learnLevel(level) {
         const L = this.learn;
         if (!L || L.busy) return;
@@ -1466,13 +1555,13 @@ class AppController {
         } else if (L.step === 'angles') {
             html = `
                 <h2 class="learn-title">Par où commencer ?</h2>
-                <p class="learn-sub">${L.focus ? 'Note' : 'Thème'} : <strong>${e(L.topic)}</strong>${L.focus ? ' (thème ' + e(L.catLabel) + ')' : ''} · niveau ${e(L.level)}<br>Lisez les aperçus, puis créez la fiche de celui qui vous plaît.</p>
+                <p class="learn-sub">${L.focus ? 'Note' : 'Thème'} : <strong>${e(L.topic)}</strong>${L.focus ? ' (thème ' + e(L.catLabel) + ')' : ''} · niveau ${e(L.level)}<br>Lisez les aperçus, puis ouvrez la fiche de celui qui vous plaît. Vous déciderez ensuite de créer la note ou non.</p>
                 ${errorNotice}
                 <div class="list single angle-list">${L.angles.map((an, i) => `
                     <article class="card angle-card" ${i === L.newFrom ? 'id="angleNew"' : ''} aria-labelledby="angleT${i}">
                         <h3 id="angleT${i}">${e(an.titre)}</h3>
                         ${an.description ? `<p class="angle-text">${e(an.description)}</p>` : ''}
-                        <button type="button" class="btn btn-secondary angle-go" onclick="app.learnPickAngle(${i})"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg>Créer la fiche<span class="sr-only"> : ${e(an.titre)}</span></button>
+                        <button type="button" class="btn btn-secondary angle-go" onclick="app.learnPickAngle(${i})"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg>Lire la fiche<span class="sr-only"> : ${e(an.titre)}</span></button>
                     </article>`).join('')}
                 </div>
                 ${L.angles.length < 15 ? `<button type="button" class="btn btn-primary" id="moreAnglesBtn" style="margin-top:var(--sp-3)" onclick="app.learnLoadAngles(true)"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Voir d'autres pistes</button>` : ''}
@@ -1483,26 +1572,35 @@ class AppController {
                     <button type="button" class="btn btn-ghost" onclick="app.learnBack('start')">Modifier le sujet</button>
                 </form>`;
         } else if (L.step === 'lesson') {
-            const dest = L.mode === 'new'
+            const catShown = L.mode === 'new' ? (L.catName != null ? L.catName : L.topic) : (L.catLabel || L.topic);
+            const destField = L.mode === 'new'
                 ? `<div class="form-group"><label class="form-label" for="learnCatName">Thème</label>
-                    <input type="text" class="form-input" id="learnCatName" maxlength="60" value="${a(L.catName != null ? L.catName : L.topic)}" autocomplete="off" oninput="app.learn.catName=this.value">
+                    <input type="text" class="form-input" id="learnCatName" maxlength="60" value="${a(catShown)}" autocomplete="off" oninput="app.learnEdit('cat', this.value)">
                     <p class="form-hint">Le thème est créé s'il n'existe pas encore.</p></div>`
-                : `<p class="learn-sub">Thème : <strong>${e(L.catLabel || L.topic)}</strong>${L.focus ? ' · la fiche prolonge la note « ' + e(L.topic) + ' »' : ''}</p>`;
+                : '';
             html = `
-                <h2 class="learn-title">Votre fiche</h2>
-                <p class="notice">Généré par IA : relisez et vérifiez avant de mémoriser. Vous pouvez tout modifier.</p>
+                <h2 class="learn-title">Fiche proposée</h2>
+                <p class="notice">Généré par IA : relisez et vérifiez. Rien n'est enregistré tant que vous ne touchez pas « Créer la note ».</p>
                 ${errorNotice}
-                <div class="form-group"><label class="form-label" for="learnNoteTitle">Titre</label>
-                    <input type="text" class="form-input" id="learnNoteTitle" maxlength="80" value="${a(L.draft.titre)}" autocomplete="off" oninput="app.learn.draft.titre=this.value"></div>
-                <div class="form-group"><label class="form-label" for="learnNoteBody">Contenu</label>
-                    <textarea class="form-textarea lesson" id="learnNoteBody" oninput="app.learn.draft.contenu=this.value">${e(L.draft.contenu)}</textarea></div>
-                ${dest}
+                <article class="card" aria-labelledby="readTitle">
+                    <h3 class="read-title" id="readTitle">${e(L.draft.titre)}</h3>
+                    <div class="lesson-body" id="readBody">${e(L.draft.contenu)}</div>
+                    <p class="form-hint" style="margin-top:var(--sp-3)">Thème : <strong id="readCat">${e(catShown)}</strong>${L.focus ? ' · prolonge la note « ' + e(L.topic) + ' »' : ''}</p>
+                </article>
                 <div class="stack">
-                    <button type="button" class="btn btn-primary" onclick="app.learnSave()"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Enregistrer en note</button>
+                    <button type="button" class="btn btn-primary" onclick="app.learnSave()"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Créer la note</button>
                     <div class="action-row">
+                        <button type="button" class="btn btn-secondary" onclick="app.learnBack('angles')">Retour aux pistes</button>
                         <button type="button" class="btn btn-secondary" onclick="app.learnLoadLesson()">Régénérer</button>
-                        <button type="button" class="btn btn-secondary" onclick="app.learnBack('angles')">Autre piste</button>
                     </div>
+                    <details class="setup">
+                        <summary>Modifier avant de créer</summary>
+                        <div class="form-group"><label class="form-label" for="learnNoteTitle">Titre</label>
+                            <input type="text" class="form-input" id="learnNoteTitle" maxlength="80" value="${a(L.draft.titre)}" autocomplete="off" oninput="app.learnEdit('titre', this.value)"></div>
+                        <div class="form-group"><label class="form-label" for="learnNoteBody">Contenu</label>
+                            <textarea class="form-textarea lesson" id="learnNoteBody" oninput="app.learnEdit('contenu', this.value)">${e(L.draft.contenu)}</textarea></div>
+                        ${destField}
+                    </details>
                 </div>`;
         } else if (L.step === 'saved') {
             const s = L.savedNote;
@@ -2323,7 +2421,7 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').then(
             (registration) => {
-                console.log('Service Worker enregistré avec succès:', registration.scope);
+                console.log('Service Worker enregistré avec succès:', registration && registration.scope);
             },
             (err) => {
                 console.log('Échec de l\'enregistrement du Service Worker:', err);
