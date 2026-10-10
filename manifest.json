@@ -2,11 +2,13 @@
   "name": "Etchnote - Notes intelligentes",
   "short_name": "Etchnote",
   "description": "Application de prise de notes avec répétition espacée pour optimiser votre mémorisation",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#F0EDE4",
-  "theme_color": "#C87654",
-  "orientation": "portrait",
+  "background_color": "#F4E5C8",
+  "theme_color": "#F4E5C8",
+  "orientation": "any",
+  "lang": "fr",
   "icons": [
     {
       "src": "icon-192.png",

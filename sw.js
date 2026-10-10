@@ -1,77 +1,75 @@
 // Service Worker pour Etchnote
-// Permet le fonctionnement hors ligne et la mise en cache
+// Fonctionnement hors ligne + mise en cache.
+// - Code (HTML / JS / JSON) : réseau d'abord, cache en secours (les corrections arrivent tout de suite)
+// - Images et icônes : cache d'abord
 
-const CACHE_NAME = 'etchnote-v4';
+const CACHE_NAME = 'etchnote-v5';
 const urlsToCache = [
   './',
   './index.html',
   './app.js',
   './manifest.json',
-  './logo-etchnote.png',
   './icon-192.png',
-  './icon-512.png'
+  './assets/emblem-120.webp',
+  './assets/emblem-320.webp',
+  './assets/icons/books.png',
+  './assets/icons/inkwell.png',
+  './assets/icons/scroll.png',
+  './assets/icons/d20.png',
+  './assets/icons/link.png'
 ];
 
-// Installation du Service Worker
+// Installation : mise en cache de l'application, activation immédiate
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Cache ouvert');
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
   );
 });
 
-// Activation du Service Worker
+// Activation : suppression des anciens caches, prise de contrôle des pages ouvertes
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Suppression ancien cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys()
+      .then((names) => Promise.all(
+        names.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-// Interception des requêtes réseau
+function isCode(request) {
+  if (request.mode === 'navigate') return true;
+  const path = new URL(request.url).pathname;
+  return /\.(html|js|json)$/.test(path) || path.endsWith('/');
+}
+
+function putInCache(request, response) {
+  if (!response || response.status !== 200 || response.type !== 'basic') return;
+  const copy = response.clone();
+  caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+}
+
 self.addEventListener('fetch', (event) => {
+  const request = event.request;
+  if (request.method !== 'GET') return;
+  if (new URL(request.url).origin !== self.location.origin) return; // polices, etc. : navigateur
+
+  if (isCode(request)) {
+    // Réseau d'abord
+    event.respondWith(
+      fetch(request)
+        .then((response) => { putInCache(request, response); return response; })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Cache d'abord (images, icônes)
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Retourne la réponse du cache si elle existe
-        if (response) {
-          return response;
-        }
-
-        // Sinon, fait la requête réseau
-        return fetch(event.request).then((response) => {
-          // Vérifie si la réponse est valide
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Clone la réponse
-          const responseToCache = response.clone();
-
-          // Met en cache la nouvelle réponse
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-
-          return response;
-        });
-      })
-      .catch(() => {
-        // En cas d'erreur, retourne une page hors ligne si elle existe
-        return caches.match('./index.html');
-      })
+    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+      putInCache(request, response);
+      return response;
+    }))
   );
 });
