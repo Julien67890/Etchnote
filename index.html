@@ -164,6 +164,9 @@ body.has-fab .app-content{padding-bottom:calc(var(--nav-h) + var(--safe-b) + 92p
 
 /* ---------- Assistant IA ---------- */
 .stack>*+*{margin-top:var(--sp-3)}
+.angle-card h3{font-size:18px;margin-bottom:var(--sp-2)}
+.angle-text{font-size:15px;line-height:1.65;color:var(--deep);margin-bottom:var(--sp-3)}
+.angle-card{scroll-margin-top:90px;margin-bottom:0}
 .pick-list{display:grid;gap:var(--sp-2)}
 .pick-list.scroll{max-height:46vh;overflow-y:auto;padding:2px}
 .pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;min-height:var(--touch);padding:12px 14px;text-align:left;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(255,250,240,.7);color:var(--deep)}
@@ -525,7 +528,7 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
 
 <nav class="bottom-nav" aria-label="Navigation principale">
   <button class="nav-item active" data-screen="screenHome" aria-current="page"><svg class="ico"><use href="#i-home"/></svg><span class="nav-label">Accueil</span></button>
-  <button class="nav-item" data-screen="screenNotes"><svg class="ico"><use href="#i-learn"/></svg><span class="nav-label">Notes</span></button>
+  <button class="nav-item" data-screen="screenLearn"><svg class="ico"><use href="#i-learn"/></svg><span class="nav-label">Apprendre</span></button>
   <button class="nav-item" data-screen="screenThemes"><svg class="ico"><use href="#i-themes"/></svg><span class="nav-label">Thèmes</span></button>
   <button class="nav-item" data-screen="screenToRead"><svg class="ico"><use href="#i-review"/></svg><span class="nav-label">Révisions</span></button>
   <button class="nav-item" data-screen="screenQuick"><svg class="ico"><use href="#i-board"/></svg><span class="nav-label">Tableau</span></button>
@@ -647,8 +650,8 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
   </div>
   <div class="help-block"><h3>Navigation</h3>
     <ul>
-      <li><strong>Accueil :</strong> révisions du jour, notes récentes, note au hasard et liens</li>
-      <li><strong>Notes :</strong> toutes vos notes, avec filtres</li>
+      <li><strong>Accueil :</strong> révisions du jour, notes récentes (« Voir tout » ou le compteur Notes ouvre toutes vos notes), note au hasard et liens</li>
+      <li><strong>Apprendre :</strong> l'assistant IA propose des pistes, vous lisez les aperçus puis créez la fiche</li>
       <li><strong>Thèmes :</strong> vos catégories (appui long ou ⋯ pour modifier)</li>
       <li><strong>Révisions :</strong> notes à revoir aujourd'hui et à venir</li>
       <li><strong>Tableau :</strong> tableau blanc pour noter vos idées</li>

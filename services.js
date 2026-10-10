@@ -170,7 +170,8 @@ class GeminiService {
                 ? "Propose 5 pistes distinctes pour approfondir ce sujet, en prolongeant ce que l'apprenant sait déjà."
                 : 'Propose 5 pistes distinctes et progressives pour apprendre ce sujet, de la plus fondamentale à la plus avancée.',
             alreadyShown.length ? `Pistes déjà proposées, à ne pas répéter : ${alreadyShown.join(' ; ')}` : '',
-            'Format exact : {"pistes":[{"titre":"8 mots maximum","description":"une phrase de 20 mots maximum"}]}'
+            'Pour chaque piste, donne un aperçu qui apporte déjà une vraie information utile : 2 à 3 phrases (60 mots maximum) qui expliquent l\'essentiel de la piste, sans formule vague du type « nous verrons… ».',
+            'Format exact : {"pistes":[{"titre":"8 mots maximum","apercu":"2 à 3 phrases"}]}'
         ].filter(Boolean).join('\n');
 
         const data = this.parseJson(await this.generate(prompt, { temperature: 0.8 }));
@@ -178,7 +179,7 @@ class GeminiService {
         const angles = list
             .filter(p => p && typeof p.titre === 'string' && p.titre.trim())
             .slice(0, 6)
-            .map(p => ({ titre: this.clean(p.titre).slice(0, 80), description: this.clean(p.description || '').slice(0, 200) }));
+            .map(p => ({ titre: this.clean(p.titre).slice(0, 80), description: this.clean(p.apercu || p.description || '').slice(0, 450) }));
         if (!angles.length) throw new GeminiError("Gemini n'a proposé aucune piste exploitable. Réessayez.", 'parse');
         return angles;
     }
@@ -188,6 +189,7 @@ class GeminiService {
         const prompt = [
             this.context(ctx),
             `Piste choisie : ${angle.titre}${angle.description ? ' — ' + angle.description : ''}`,
+            angle.description ? "L'apprenant a déjà lu l'aperçu ci-dessus : la fiche doit être cohérente avec lui et aller plus loin." : '',
             '',
             'Rédige une fiche de mémorisation sur cette piste.',
             'Contraintes : 120 à 200 mots, texte brut. Structure : une phrase d\'introduction ; 3 à 5 points clés, chacun sur une ligne commençant par "• " ; une ligne "Exemple : …" ; une ligne "À retenir : …" (une seule phrase).',

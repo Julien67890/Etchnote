@@ -325,9 +325,9 @@ class SpacedRepetitionService {
 // ===========================
 
 // Écrans accessibles depuis la barre du bas
-const TAB_SCREENS = ['screenHome', 'screenNotes', 'screenThemes', 'screenToRead', 'screenQuick'];
+const TAB_SCREENS = ['screenHome', 'screenLearn', 'screenThemes', 'screenToRead', 'screenQuick'];
 // Onglet mis en évidence pour les écrans secondaires
-const PARENT_TAB = { screenRandom: 'screenHome', screenLinks: 'screenHome', screenLearn: 'screenHome', screenCategoryNotes: 'screenThemes' };
+const PARENT_TAB = { screenNotes: 'screenHome', screenRandom: 'screenHome', screenLinks: 'screenHome', screenCategoryNotes: 'screenThemes' };
 const SCREEN_TITLES = {
     screenHome: 'Etchnote',
     screenNotes: 'Mes notes',
@@ -409,7 +409,9 @@ class AppController {
         // Navigation du bas
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
-                this.navigateTo(e.currentTarget.getAttribute('data-screen'));
+                const target = e.currentTarget.getAttribute('data-screen');
+                if (target === 'screenLearn') this.enterLearn();
+                else this.navigateTo(target);
             });
         });
 
@@ -550,7 +552,8 @@ class AppController {
         document.getElementById(screenId).classList.add('active');
         this.currentScreen = screenId;
 
-        const isSub = !TAB_SCREENS.includes(screenId);
+        // « Apprendre » est un onglet, mais garde un bouton Retour vers l'accueil
+        const isSub = !TAB_SCREENS.includes(screenId) || screenId === 'screenLearn';
         document.getElementById('headerTitle').textContent = title || SCREEN_TITLES[screenId] || 'Etchnote';
         document.getElementById('headerBack').hidden = !isSub;
         document.getElementById('headerLogo').hidden = isSub;
@@ -1176,9 +1179,16 @@ class AppController {
             goal: '', existing: [],
             angles: [], shown: [], angle: null,
             draft: { titre: '', contenu: '' },
+            newFrom: null,
             savedNote: null,
             busy: false, busyText: '', error: ''
         }, extra);
+    }
+
+    /** Onglet « Apprendre » : reprend la session en cours, sauf si elle est terminée. */
+    enterLearn() {
+        if (!this.learn || this.learn.step === 'saved') this.learn = this.freshLearn();
+        this.navigateTo('screenLearn');
     }
 
     openLearn(opts = {}) {
@@ -1287,8 +1297,17 @@ class AppController {
                 more ? L.shown : []
             );
             if (this.learn !== L) return;
-            L.angles = angles;
-            L.shown = [...L.shown, ...angles.map(a => a.titre)];
+            if (more) {
+                const known = new Set(L.angles.map(a => a.titre.toLowerCase()));
+                const fresh = angles.filter(a => !known.has(a.titre.toLowerCase()));
+                L.newFrom = fresh.length ? L.angles.length : null;
+                L.angles = [...L.angles, ...fresh];
+                if (!fresh.length) throw new GeminiError("Gemini n'a pas trouvé de nouvelle piste. Réessayez.", 'dup');
+            } else {
+                L.angles = angles;
+                L.newFrom = null;
+            }
+            L.shown = L.angles.map(a => a.titre);
             L.step = 'angles';
         });
     }
@@ -1447,19 +1466,21 @@ class AppController {
         } else if (L.step === 'angles') {
             html = `
                 <h2 class="learn-title">Par où commencer ?</h2>
-                <p class="learn-sub">${L.focus ? 'Note' : 'Thème'} : <strong>${e(L.topic)}</strong>${L.focus ? ' (thème ' + e(L.catLabel) + ')' : ''} · niveau ${e(L.level)}</p>
+                <p class="learn-sub">${L.focus ? 'Note' : 'Thème'} : <strong>${e(L.topic)}</strong>${L.focus ? ' (thème ' + e(L.catLabel) + ')' : ''} · niveau ${e(L.level)}<br>Lisez les aperçus, puis créez la fiche de celui qui vous plaît.</p>
                 ${errorNotice}
-                <div class="pick-list">${L.angles.map((an, i) => `
-                    <button type="button" class="pick" onclick="app.learnPickAngle(${i})"><strong>${e(an.titre)}</strong>${an.description ? `<span>${e(an.description)}</span>` : ''}</button>`).join('')}
+                <div class="list single angle-list">${L.angles.map((an, i) => `
+                    <article class="card angle-card" ${i === L.newFrom ? 'id="angleNew"' : ''} aria-labelledby="angleT${i}">
+                        <h3 id="angleT${i}">${e(an.titre)}</h3>
+                        ${an.description ? `<p class="angle-text">${e(an.description)}</p>` : ''}
+                        <button type="button" class="btn btn-secondary angle-go" onclick="app.learnPickAngle(${i})"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg>Créer la fiche<span class="sr-only"> : ${e(an.titre)}</span></button>
+                    </article>`).join('')}
                 </div>
-                <form class="stack" style="margin-top:var(--sp-4)" onsubmit="event.preventDefault();app.learnOwnAngle()">
+                ${L.angles.length < 15 ? `<button type="button" class="btn btn-primary" id="moreAnglesBtn" style="margin-top:var(--sp-3)" onclick="app.learnLoadAngles(true)"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Voir d'autres pistes</button>` : ''}
+                <form class="stack" style="margin-top:var(--sp-5)" onsubmit="event.preventDefault();app.learnOwnAngle()">
                     <div class="form-group" style="margin-bottom:0"><label class="form-label" for="learnOwnAngle">Ou précisez votre propre piste</label>
                         <input type="text" class="form-input" id="learnOwnAngle" maxlength="120" placeholder="Ex : les erreurs fréquentes" autocomplete="off"></div>
                     <button type="submit" class="btn btn-secondary">Utiliser cette piste</button>
-                    <div class="action-row">
-                        <button type="button" class="btn btn-secondary" onclick="app.learnLoadAngles(true)">Autres pistes</button>
-                        <button type="button" class="btn btn-ghost" onclick="app.learnBack('start')">Modifier</button>
-                    </div>
+                    <button type="button" class="btn btn-ghost" onclick="app.learnBack('start')">Modifier le sujet</button>
                 </form>`;
         } else if (L.step === 'lesson') {
             const dest = L.mode === 'new'
@@ -1499,6 +1520,11 @@ class AppController {
                 </div>`;
         }
         box.innerHTML = html;
+        if (L.step === 'angles' && L.newFrom != null) {
+            const first = document.getElementById('angleNew');
+            L.newFrom = null;
+            if (first && first.scrollIntoView) first.scrollIntoView({ block: 'start' });
+        }
     }
 
     // ===========================
