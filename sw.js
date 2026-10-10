@@ -3,11 +3,12 @@
 // - Code (HTML / JS / JSON) : réseau d'abord, cache en secours (les corrections arrivent tout de suite)
 // - Images et icônes : cache d'abord
 
-const CACHE_NAME = 'etchnote-v6';
+const CACHE_NAME = 'etchnote-v7';
 const urlsToCache = [
   './',
   './index.html',
   './app.js',
+  './services.js',
   './manifest.json',
   './icon-192.png',
   './assets/emblem-120.webp',

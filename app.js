@@ -57,7 +57,11 @@ class DatabaseService {
     async addCategory(nom) {
         const transaction = this.db.transaction(['categories'], 'readwrite');
         const store = transaction.objectStore('categories');
-        return store.add({ nom, dateCreation: new Date().toISOString() });
+        return new Promise((resolve, reject) => {
+            const request = store.add({ nom, dateCreation: new Date().toISOString() });
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
     }
 
     async getAllCategories() {
@@ -104,12 +108,16 @@ class DatabaseService {
     async addNote(note) {
         const transaction = this.db.transaction(['notes'], 'readwrite');
         const store = transaction.objectStore('notes');
-        return store.add({
-            ...note,
-            niveauRevision: 1,
-            dateCreation: new Date().toISOString(),
-            dateDerniereLecture: null,
-            dateProchaineRevision: new Date(Date.now() + SpacedRepetitionService.INTERVALS[1]).toISOString() // +24 h
+        return new Promise((resolve, reject) => {
+            const request = store.add({
+                ...note,
+                niveauRevision: 1,
+                dateCreation: new Date().toISOString(),
+                dateDerniereLecture: null,
+                dateProchaineRevision: new Date(Date.now() + SpacedRepetitionService.INTERVALS[1]).toISOString() // +24 h
+            });
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
         });
     }
 
@@ -218,6 +226,35 @@ class DatabaseService {
             request.onerror = () => reject(request.error);
         });
     }
+
+    // Sauvegarde / restauration complète
+    async exportAll() {
+        const getAll = (name) => new Promise((resolve, reject) => {
+            const request = this.db.transaction([name], 'readonly').objectStore(name).getAll();
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+        const [categories, notes, quick_note, links] = await Promise.all(
+            ['categories', 'notes', 'quick_note', 'links'].map(getAll)
+        );
+        return { categories, notes, quick_note, links };
+    }
+
+    /** Remplace tout le contenu local (une seule transaction : tout ou rien). */
+    async importAll(data) {
+        return new Promise((resolve, reject) => {
+            const names = ['categories', 'notes', 'quick_note', 'links'];
+            const transaction = this.db.transaction(names, 'readwrite');
+            names.forEach(name => {
+                const store = transaction.objectStore(name);
+                store.clear();
+                (data[name] || []).forEach(item => store.put(item));
+            });
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+            transaction.onabort = () => reject(transaction.error || new Error('Restauration annulée'));
+        });
+    }
 }
 
 // ===========================
@@ -290,7 +327,7 @@ class SpacedRepetitionService {
 // Écrans accessibles depuis la barre du bas
 const TAB_SCREENS = ['screenHome', 'screenNotes', 'screenThemes', 'screenToRead', 'screenQuick'];
 // Onglet mis en évidence pour les écrans secondaires
-const PARENT_TAB = { screenRandom: 'screenHome', screenLinks: 'screenHome', screenCategoryNotes: 'screenThemes' };
+const PARENT_TAB = { screenRandom: 'screenHome', screenLinks: 'screenHome', screenLearn: 'screenHome', screenCategoryNotes: 'screenThemes' };
 const SCREEN_TITLES = {
     screenHome: 'Etchnote',
     screenNotes: 'Mes notes',
@@ -299,6 +336,7 @@ const SCREEN_TITLES = {
     screenQuick: 'Tableau blanc',
     screenRandom: 'Note au hasard',
     screenLinks: 'Mes liens',
+    screenLearn: 'Apprendre',
     screenSearch: 'Recherche',
     screenNoteDetail: 'Lecture'
 };
@@ -337,6 +375,8 @@ class AppController {
         this.modalOpenedAt = 0;
         this.toastTimer = null;
         this._confirmDone = null;
+        this.learn = null;             // état de l'assistant IA
+        this.backupBusy = false;
     }
 
     async init() {
@@ -379,6 +419,23 @@ class AppController {
         $('homeSeeAll').addEventListener('click', () => this.navigateTo('screenNotes'));
         $('shortcutRandom').addEventListener('click', () => this.navigateTo('screenRandom'));
         $('shortcutLinks').addEventListener('click', () => this.navigateTo('screenLinks'));
+        $('shortcutLearn').addEventListener('click', () => this.openLearn());
+        $('settingsBtn').addEventListener('click', () => this.openSettings());
+
+        // Réglages : enregistrement immédiat
+        $('setGeminiKey').addEventListener('input', (e) => SettingsService.set('geminiKey', e.target.value.trim()));
+        $('setGeminiModel').addEventListener('input', (e) => SettingsService.set('geminiModel', e.target.value.trim()));
+        $('setGoogleClientId').addEventListener('input', (e) => {
+            const v = e.target.value.trim();
+            SettingsService.set('googleClientId', v);
+            if (v) DriveService.preload().catch(() => {});
+        });
+        $('testGeminiBtn').addEventListener('click', () => this.testGemini());
+        $('driveSaveBtn').addEventListener('click', () => this.driveSave());
+        $('driveRestoreBtn').addEventListener('click', () => this.driveRestore());
+        $('exportBtn').addEventListener('click', () => this.exportFile());
+        $('importBtn').addEventListener('click', () => $('importFile').click());
+        $('importFile').addEventListener('change', (e) => this.importFile(e.target));
 
         // Filtres « Mes notes » et onglets « Révisions »
         document.querySelectorAll('.seg-btn[data-filter]').forEach(btn => {
@@ -525,6 +582,7 @@ class AppController {
                 case 'screenToRead': await this.renderNotesToRead(); break;
                 case 'screenRandom': await this.renderRandomNote(); break;
                 case 'screenLinks': await this.renderLinks(); break;
+                case 'screenLearn': await this.renderLearn(); break;
             }
         } catch (err) {
             console.error('Erreur de chargement :', err);
@@ -1102,6 +1160,433 @@ class AppController {
     }
 
     // ===========================
+    // ASSISTANT IA : apprendre un sujet avec Gemini
+    // ===========================
+
+    freshLearn(extra = {}) {
+        return Object.assign({
+            step: 'start',       // start → angles → lesson → saved
+            mode: 'new',         // new : nouveau thème · deepen : thème existant
+            topic: '', catId: null, catName: null,
+            level: SettingsService.get('level', 'débutant'),
+            goal: '', existing: [],
+            angles: [], shown: [], angle: null,
+            draft: { titre: '', contenu: '' },
+            savedNote: null,
+            busy: false, busyText: '', error: ''
+        }, extra);
+    }
+
+    openLearn(opts = {}) {
+        this.learn = this.freshLearn(opts);
+        this.navigateTo('screenLearn');
+    }
+
+    /** Lance une étape asynchrone avec écran d'attente ; ignore le résultat si l'utilisateur est parti. */
+    async learnRun(text, task) {
+        const L = this.learn;
+        if (!L || L.busy) return;
+        L.busy = true; L.busyText = text; L.error = '';
+        await this.renderLearn();
+        try {
+            await task(L);
+        } catch (err) {
+            if (this.learn !== L) return;
+            console.error(err);
+            L.error = (err && err.message) || "Une erreur est survenue.";
+        }
+        if (this.learn !== L) return;
+        L.busy = false;
+        if (this.currentScreen === 'screenLearn') await this.renderLearn();
+    }
+
+    learnBack(step) {
+        if (!this.learn || this.learn.busy) return;
+        this.learn.step = step;
+        this.learn.error = '';
+        this.renderLearn();
+    }
+
+    learnMode(mode) {
+        const L = this.learn;
+        if (!L || L.busy) return;
+        L.mode = mode; L.error = '';
+        this.renderLearn();
+    }
+
+    learnPickCat(id) {
+        const L = this.learn;
+        if (!L || L.busy) return;
+        L.catId = id; L.error = '';
+        this.renderLearn();
+    }
+
+    learnLevel(level) {
+        const L = this.learn;
+        if (!L || L.busy) return;
+        L.level = level;
+        SettingsService.set('level', level);
+        this.renderLearn();
+    }
+
+    async learnStart() {
+        const L = this.learn;
+        if (!L || L.busy) return;
+        if (!GeminiService.hasKey()) { this.openSettings(); return; }
+
+        if (L.mode === 'new') {
+            L.topic = (L.topic || '').trim();
+            if (!L.topic) { L.error = 'Indiquez ce que vous voulez apprendre.'; return this.renderLearn(); }
+            L.existing = [];
+            L.catName = null;
+        } else {
+            const cat = L.catId ? await this.db.getCategory(L.catId) : null;
+            if (!cat) { L.error = 'Choisissez un thème à approfondir.'; return this.renderLearn(); }
+            L.topic = cat.nom;
+            L.existing = await this.db.getNotesByCategory(cat.id);
+        }
+        L.shown = [];
+        return this.learnLoadAngles(false);
+    }
+
+    learnLoadAngles(more) {
+        return this.learnRun('Gemini cherche des pistes…', async (L) => {
+            const angles = await GeminiService.suggestAngles(
+                { topic: L.topic, level: L.level, goal: L.goal, existing: L.existing },
+                more ? L.shown : []
+            );
+            if (this.learn !== L) return;
+            L.angles = angles;
+            L.shown = [...L.shown, ...angles.map(a => a.titre)];
+            L.step = 'angles';
+        });
+    }
+
+    learnPickAngle(index) {
+        const L = this.learn;
+        if (!L || L.busy || !L.angles[index]) return;
+        L.angle = L.angles[index];
+        return this.learnLoadLesson();
+    }
+
+    learnOwnAngle() {
+        const L = this.learn;
+        if (!L || L.busy) return;
+        const input = document.getElementById('learnOwnAngle');
+        const value = input ? input.value.trim() : '';
+        if (!value) { L.error = 'Écrivez votre piste, ou choisissez-en une dans la liste.'; return this.renderLearn(); }
+        L.angle = { titre: value.slice(0, 120), description: '' };
+        return this.learnLoadLesson();
+    }
+
+    learnLoadLesson() {
+        return this.learnRun('Gemini rédige la fiche…', async (L) => {
+            const lesson = await GeminiService.makeLesson(
+                { topic: L.topic, level: L.level, goal: L.goal, existing: L.existing }, L.angle
+            );
+            if (this.learn !== L) return;
+            L.draft = { titre: lesson.titre, contenu: GeminiService.noteText(lesson) };
+            L.step = 'lesson';
+        });
+    }
+
+    async learnSave() {
+        const L = this.learn;
+        if (!L || L.busy) return;
+        const titre = (L.draft.titre || '').trim();
+        const contenu = (L.draft.contenu || '').trim();
+        if (!titre || !contenu) { L.error = 'Le titre et le contenu ne peuvent pas être vides.'; return this.renderLearn(); }
+
+        let catId = L.catId;
+        let catName = L.topic;
+        try {
+            if (L.mode === 'new') {
+                catName = (L.catName != null ? L.catName : L.topic).trim().slice(0, 60);
+                if (!catName) { L.error = 'Donnez un nom au thème.'; return this.renderLearn(); }
+                const cats = await this.db.getAllCategories();
+                const found = cats.find(c => c.nom.trim().toLowerCase() === catName.toLowerCase());
+                catId = found ? found.id : await this.db.addCategory(catName);
+                if (found) catName = found.nom;
+            } else {
+                const cat = await this.db.getCategory(catId);
+                catName = cat ? cat.nom : catName;
+            }
+            const noteId = await this.db.addNote({ categorieId: catId, titre, contenu });
+            L.savedNote = { id: noteId, titre, catName };
+            L.mode = 'deepen';
+            L.catId = catId;
+            L.step = 'saved';
+            L.error = '';
+            await this.updateStats();
+        } catch (err) {
+            console.error(err);
+            L.error = "Impossible d'enregistrer la note.";
+        }
+        if (this.learn === L) await this.renderLearn();
+    }
+
+    async learnMore() {
+        const L = this.learn;
+        if (!L || L.busy) return;
+        L.existing = await this.db.getNotesByCategory(L.catId);
+        L.shown = [];
+        L.angle = null;
+        return this.learnLoadAngles(false);
+    }
+
+    async renderLearn() {
+        if (!this.learn) this.learn = this.freshLearn();
+        const L = this.learn;
+        const box = document.getElementById('learnContent');
+        const e = (t) => this.escapeHtml(t);
+        const a = (t) => this.escapeAttr(t);
+
+        const keyNotice = GeminiService.hasKey() ? '' :
+            `<div class="notice err" role="alert">Ajoutez votre clé Gemini gratuite pour utiliser l'assistant. <button type="button" class="link-btn" onclick="app.openSettings()">Ouvrir les réglages</button></div>`;
+        const errorNotice = L.error ? `<div class="notice err" role="alert">${e(L.error)}</div>` : '';
+
+        if (L.busy) {
+            box.innerHTML = `<div class="busy" role="status"><span class="spinner" aria-hidden="true"></span>${e(L.busyText)}</div>`;
+            return;
+        }
+
+        let html = '';
+        if (L.step === 'start') {
+            const [cats, notes] = await Promise.all([this.db.getAllCategories(), this.db.getAllNotes()]);
+            if (this.learn !== L || L.busy) return;
+            const counts = {};
+            notes.forEach(n => { counts[n.categorieId] = (counts[n.categorieId] || 0) + 1; });
+            const levels = ['débutant', 'intermédiaire', 'avancé'];
+
+            let target;
+            if (L.mode === 'new') {
+                target = `<div class="form-group"><label class="form-label" for="learnTopic">Que voulez-vous apprendre ?</label>
+                    <input type="text" class="form-input" id="learnTopic" maxlength="120" value="${a(L.topic)}" placeholder="Ex : dimensionner un onduleur, le subjonctif…" autocomplete="off" oninput="app.learn.topic=this.value"></div>`;
+            } else if (!cats.length) {
+                target = `<p class="notice">Vous n'avez pas encore de thème. Passez sur « Nouveau thème » pour en créer un.</p>`;
+            } else {
+                target = `<div class="form-group"><span class="form-label" id="lblCat">Thème à approfondir</span>
+                    <div class="pick-list" role="group" aria-labelledby="lblCat">${cats.map(c => `
+                        <button type="button" class="pick ${c.id === L.catId ? 'sel' : ''}" aria-pressed="${c.id === L.catId}" onclick="app.learnPickCat(${Number(c.id)})">
+                            <strong>${e(c.nom)}</strong><span>${counts[c.id] || 0} note${(counts[c.id] || 0) > 1 ? 's' : ''}</span></button>`).join('')}
+                    </div>${L.catId ? '<p class="form-hint">Les titres et extraits des notes de ce thème sont envoyés à Gemini pour éviter les répétitions.</p>' : ''}</div>`;
+            }
+
+            html = `
+                <h2 class="learn-title">Apprendre avec l'IA</h2>
+                <p class="learn-sub">Choisissez un thème, l'assistant propose des pistes, puis rédige une fiche à mémoriser.</p>
+                ${keyNotice}${errorNotice}
+                <form id="formLearn" onsubmit="event.preventDefault();app.learnStart()">
+                    <div class="seg" role="tablist" aria-label="Type de demande">
+                        <button type="button" class="seg-btn" role="tab" aria-selected="${L.mode === 'new'}" onclick="app.learnMode('new')">Nouveau thème</button>
+                        <button type="button" class="seg-btn" role="tab" aria-selected="${L.mode === 'deepen'}" onclick="app.learnMode('deepen')">Approfondir</button>
+                    </div>
+                    ${target}
+                    <div class="form-group"><span class="form-label" id="lblLevel">Votre niveau</span>
+                        <div class="seg" role="tablist" aria-labelledby="lblLevel">${levels.map(l => `
+                            <button type="button" class="seg-btn" role="tab" aria-selected="${L.level === l}" onclick="app.learnLevel('${l}')">${l.charAt(0).toUpperCase() + l.slice(1)}</button>`).join('')}
+                        </div></div>
+                    <div class="form-group"><label class="form-label" for="learnGoal">Votre objectif <span class="opt">(facultatif)</span></label>
+                        <input type="text" class="form-input" id="learnGoal" maxlength="140" value="${a(L.goal)}" placeholder="Ex : pour mon travail sur chantier, pour un examen…" autocomplete="off" oninput="app.learn.goal=this.value"></div>
+                    <button type="submit" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg>Proposer des pistes</button>
+                </form>`;
+        } else if (L.step === 'angles') {
+            html = `
+                <h2 class="learn-title">Par où commencer ?</h2>
+                <p class="learn-sub">Thème : <strong>${e(L.topic)}</strong> · niveau ${e(L.level)}</p>
+                ${errorNotice}
+                <div class="pick-list">${L.angles.map((an, i) => `
+                    <button type="button" class="pick" onclick="app.learnPickAngle(${i})"><strong>${e(an.titre)}</strong>${an.description ? `<span>${e(an.description)}</span>` : ''}</button>`).join('')}
+                </div>
+                <form class="stack" style="margin-top:var(--sp-4)" onsubmit="event.preventDefault();app.learnOwnAngle()">
+                    <div class="form-group" style="margin-bottom:0"><label class="form-label" for="learnOwnAngle">Ou précisez votre propre piste</label>
+                        <input type="text" class="form-input" id="learnOwnAngle" maxlength="120" placeholder="Ex : les erreurs fréquentes" autocomplete="off"></div>
+                    <button type="submit" class="btn btn-secondary">Utiliser cette piste</button>
+                    <div class="action-row">
+                        <button type="button" class="btn btn-secondary" onclick="app.learnLoadAngles(true)">Autres pistes</button>
+                        <button type="button" class="btn btn-ghost" onclick="app.learnBack('start')">Modifier</button>
+                    </div>
+                </form>`;
+        } else if (L.step === 'lesson') {
+            const dest = L.mode === 'new'
+                ? `<div class="form-group"><label class="form-label" for="learnCatName">Thème</label>
+                    <input type="text" class="form-input" id="learnCatName" maxlength="60" value="${a(L.catName != null ? L.catName : L.topic)}" autocomplete="off" oninput="app.learn.catName=this.value">
+                    <p class="form-hint">Le thème est créé s'il n'existe pas encore.</p></div>`
+                : `<p class="learn-sub">Thème : <strong>${e(L.topic)}</strong></p>`;
+            html = `
+                <h2 class="learn-title">Votre fiche</h2>
+                <p class="notice">Généré par IA : relisez et vérifiez avant de mémoriser. Vous pouvez tout modifier.</p>
+                ${errorNotice}
+                <div class="form-group"><label class="form-label" for="learnNoteTitle">Titre</label>
+                    <input type="text" class="form-input" id="learnNoteTitle" maxlength="80" value="${a(L.draft.titre)}" autocomplete="off" oninput="app.learn.draft.titre=this.value"></div>
+                <div class="form-group"><label class="form-label" for="learnNoteBody">Contenu</label>
+                    <textarea class="form-textarea lesson" id="learnNoteBody" oninput="app.learn.draft.contenu=this.value">${e(L.draft.contenu)}</textarea></div>
+                ${dest}
+                <div class="stack">
+                    <button type="button" class="btn btn-primary" onclick="app.learnSave()"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Enregistrer en note</button>
+                    <div class="action-row">
+                        <button type="button" class="btn btn-secondary" onclick="app.learnLoadLesson()">Régénérer</button>
+                        <button type="button" class="btn btn-secondary" onclick="app.learnBack('angles')">Autre piste</button>
+                    </div>
+                </div>`;
+        } else if (L.step === 'saved') {
+            const s = L.savedNote;
+            html = `
+                <div class="empty-state">
+                    <div class="empty-text">Note enregistrée</div>
+                    <p class="empty-sub">« ${e(s.titre)} » est dans le thème « ${e(s.catName)} ». Première révision dans 24 h.</p>
+                </div>
+                <div class="stack">
+                    <button type="button" class="btn btn-primary" onclick="app.learnMore()"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg>Approfondir ce thème</button>
+                    <div class="action-row">
+                        <button type="button" class="btn btn-secondary" onclick="app.showNoteDetail(${Number(s.id)})">Lire la note</button>
+                        <button type="button" class="btn btn-ghost" onclick="app.navigateTo('screenHome')">Terminer</button>
+                    </div>
+                </div>`;
+        }
+        box.innerHTML = html;
+    }
+
+    // ===========================
+    // RÉGLAGES, SAUVEGARDE
+    // ===========================
+
+    openSettings() {
+        document.getElementById('setGeminiKey').value = SettingsService.get('geminiKey');
+        const model = document.getElementById('setGeminiModel');
+        model.value = SettingsService.get('geminiModel');
+        model.placeholder = DEFAULT_GEMINI_MODEL;
+        document.getElementById('setGoogleClientId').value = SettingsService.get('googleClientId');
+        this.updateBackupStatus();
+        this.openModal('modalSettings');
+        if (SettingsService.get('googleClientId')) DriveService.preload().catch(() => {});
+    }
+
+    updateBackupStatus(text) {
+        const el = document.getElementById('backupStatus');
+        if (text) { el.textContent = text; return; }
+        const last = SettingsService.get('lastBackup');
+        el.textContent = last
+            ? 'Dernière sauvegarde Drive : ' + new Date(last).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' })
+            : 'Aucune sauvegarde Drive pour le moment.';
+    }
+
+    setBackupBusy(busy, text) {
+        this.backupBusy = busy;
+        ['driveSaveBtn', 'driveRestoreBtn', 'exportBtn', 'importBtn', 'testGeminiBtn'].forEach(id => {
+            document.getElementById(id).disabled = busy;
+        });
+        this.updateBackupStatus(busy ? text : undefined);
+    }
+
+    async testGemini() {
+        if (this.backupBusy) return;
+        if (!GeminiService.hasKey()) { this.toast('Saisissez d\'abord la clé Gemini.', true); return; }
+        this.setBackupBusy(true, 'Test de la clé…');
+        try {
+            await GeminiService.generate('Réponds exactement par {"ok":true}', { temperature: 0, timeoutMs: 20000 });
+            this.toast('Clé Gemini valide');
+        } catch (err) {
+            this.toast(err.message, true);
+        } finally {
+            this.setBackupBusy(false);
+        }
+    }
+
+    async driveSave() {
+        if (this.backupBusy) return;
+        // Le jeton doit être demandé directement depuis le clic (sinon la fenêtre Google est bloquée)
+        const tokenPromise = DriveService.getToken();
+        this.setBackupBusy(true, 'Connexion à Google…');
+        try {
+            const token = await tokenPromise;
+            this.updateBackupStatus('Envoi de la sauvegarde…');
+            const dump = await this.db.exportAll();
+            const result = await DriveService.saveBackup(token, BackupFormat.build(dump));
+            SettingsService.set('lastBackup', (result && result.modifiedTime) || new Date().toISOString());
+            this.toast('Sauvegarde envoyée sur Google Drive');
+        } catch (err) {
+            this.toast((err && err.message) || 'Sauvegarde impossible.', true);
+        } finally {
+            this.setBackupBusy(false);
+        }
+    }
+
+    async driveRestore() {
+        if (this.backupBusy) return;
+        const tokenPromise = DriveService.getToken();
+        this.setBackupBusy(true, 'Connexion à Google…');
+        try {
+            const token = await tokenPromise;
+            this.updateBackupStatus('Lecture de la sauvegarde…');
+            const { data, modifiedTime } = await DriveService.loadBackup(token);
+            this.setBackupBusy(false);
+            await this.restoreFromData(data, modifiedTime);
+        } catch (err) {
+            this.toast((err && err.message) || 'Restauration impossible.', true);
+        } finally {
+            this.setBackupBusy(false);
+        }
+    }
+
+    /** Valide, demande confirmation, puis remplace les données locales. */
+    async restoreFromData(raw, dateIso) {
+        let data;
+        try { data = BackupFormat.validate(raw); }
+        catch (err) { this.toast(err.message, true); return; }
+
+        const when = dateIso || raw.exportedAt;
+        const label = when ? ' du ' + new Date(when).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+        const ok = await this.confirmDialog(
+            'Restaurer cette sauvegarde ?',
+            `Sauvegarde${label} : ${data.categories.length} thème(s), ${data.notes.length} note(s). Les données actuelles de cet appareil seront remplacées.`,
+            'Restaurer'
+        );
+        if (!ok) return;
+        try {
+            await this.db.importAll(data);
+        } catch (err) {
+            console.error(err);
+            this.toast('Restauration impossible : rien n\'a été modifié.', true);
+            return;
+        }
+        this.learn = null;
+        this.closeModal('modalSettings');
+        await this.loadQuickNote();
+        this.navigateTo('screenHome');
+        this.toast('Sauvegarde restaurée');
+    }
+
+    exportFile() {
+        this.db.exportAll().then(dump => {
+            const blob = new Blob([JSON.stringify(BackupFormat.build(dump), null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `etchnote-sauvegarde-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+            this.toast('Fichier exporté');
+        }).catch(err => {
+            console.error(err);
+            this.toast("Export impossible.", true);
+        });
+    }
+
+    async importFile(input) {
+        const file = input.files && input.files[0];
+        input.value = '';
+        if (!file) return;
+        if (file.size > 20 * 1024 * 1024) { this.toast('Fichier trop volumineux.', true); return; }
+        let raw;
+        try { raw = JSON.parse(await file.text()); }
+        catch (err) { this.toast("Ce fichier n'est pas une sauvegarde valide.", true); return; }
+        await this.restoreFromData(raw);
+    }
+
+    // ===========================
     // APPUI LONG (édition)
     // ===========================
 
@@ -1201,15 +1686,17 @@ class AppController {
         const container = document.getElementById('categoryNotesList');
         if (notes.length === 0) {
             container.innerHTML = this.emptyHTML('inkwell', 'Aucune note dans ce thème', '',
-                '<button class="btn btn-primary" onclick="app.openAddNoteModal()">Ajouter une note</button>');
+                '<button class="btn btn-primary" onclick="app.openAddNoteModal()">Ajouter une note</button>' +
+                `<button class="btn btn-secondary" style="margin-top:12px" onclick="app.openLearn({ mode: 'deepen', catId: ${Number(categoryId)} })"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg>Apprendre avec l'IA</button>`);
             return;
         }
 
         notes.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation));
-        container.innerHTML = notes.map(note => this.noteItemHTML(note, category, {
-            meta: `Niveau ${note.niveauRevision}`,
-            snippet: this.truncateText(note.contenu, 100)
-        })).join('');
+        container.innerHTML = `<button class="btn btn-secondary" style="grid-column:1/-1" onclick="app.openLearn({ mode: 'deepen', catId: ${Number(categoryId)} })"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg>Approfondir avec l'IA</button>` +
+            notes.map(note => this.noteItemHTML(note, category, {
+                meta: `Niveau ${note.niveauRevision}`,
+                snippet: this.truncateText(note.contenu, 100)
+            })).join('');
     }
 
     // ===========================

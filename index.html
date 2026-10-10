@@ -157,6 +157,31 @@ body.has-fab .app-content{padding-bottom:calc(var(--nav-h) + var(--safe-b) + 92p
 .shortcut img{width:36px;height:36px;object-fit:contain}
 .shortcut:active{background:var(--parch-deep)}
 
+.shortcut.wide{grid-column:1/-1}
+.shortcut .ico{width:32px;height:32px;color:var(--copper-text)}
+
+/* ---------- Assistant IA ---------- */
+.stack>*+*{margin-top:var(--sp-3)}
+.pick-list{display:grid;gap:var(--sp-2)}
+.pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;min-height:var(--touch);padding:12px 14px;text-align:left;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(255,250,240,.7);color:var(--deep)}
+.pick strong{font-size:16px;font-weight:600}
+.pick span{font-size:13.5px;color:var(--soft)}
+.pick:active{background:var(--parch-deep)}
+.pick.sel{border-color:var(--copper);background:var(--parch-deep);box-shadow:0 0 0 2px rgba(168,95,50,.25)}
+.notice{font-size:13px;line-height:1.5;color:var(--soft);padding:10px 12px;border-radius:var(--r-md);background:rgba(197,154,91,.16);border:1px solid var(--line-soft);margin-bottom:var(--sp-3)}
+.notice.err{background:#F1D2C8;color:#7A2415;border-color:#D9A99B}
+.learn-title{font-size:22px;margin-bottom:var(--sp-2)}
+.learn-sub{font-size:14px;color:var(--soft);margin-bottom:var(--sp-4)}
+.busy{display:flex;align-items:center;justify-content:center;gap:var(--sp-3);padding:var(--sp-6) var(--sp-4);color:var(--soft);font-weight:500}
+.spinner{width:22px;height:22px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--copper);animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.form-textarea.lesson{min-height:260px}
+details.setup{margin-top:var(--sp-4);font-size:14px;color:var(--soft)}
+details.setup summary{min-height:var(--touch);display:flex;align-items:center;cursor:pointer;color:var(--copper-text);font-weight:600}
+details.setup ol{padding-left:20px;line-height:1.6}
+details.setup li{margin-bottom:6px}
+.form-hint a{color:var(--copper-text);font-weight:600}
+
 /* ---------- Boutons ---------- */
 .btn{width:100%;min-height:48px;padding:12px 18px;border:1px solid transparent;border-radius:var(--r-md);font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:var(--sp-2);transition:transform .1s,filter .15s,background .15s}
 .btn:active{transform:scale(.98)}
@@ -370,6 +395,8 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
     <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
     <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
     <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.5 5.2 5.7.8-4.1 4 1 5.6L12 16.4 6.9 19.1l1-5.6-4.1-4 5.7-.8z"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.4"/><circle cx="8" cy="17" r="2.4"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.5l1.9 5.6 5.6 1.9-5.6 1.9L12 18.5l-1.9-5.6L4.5 11l5.6-1.9z"/><path d="M19 3.5v3M17.5 5h3M5 17.5v3M3.5 19h3"/></symbol>
     <symbol id="i-orn" viewBox="0 0 140 14"><path d="M2 7h54M84 7h54" stroke-width="1"/><path d="M70 1.5l2.6 5.5L70 12.5 67.4 7z" stroke-width="1.2"/><circle cx="62" cy="7" r="1.2"/><circle cx="78" cy="7" r="1.2"/></symbol>
   </defs>
 </svg>
@@ -388,6 +415,7 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
     <button class="icon-btn plain" id="headerBack" aria-label="Retour" hidden><svg class="ico"><use href="#i-back"/></svg></button>
     <img class="header-logo" id="headerLogo" src="assets/emblem-120.webp" alt="" width="40" height="40">
     <h1 class="header-title" id="headerTitle">Etchnote</h1>
+    <button class="icon-btn" id="settingsBtn" aria-label="Réglages"><svg class="ico"><use href="#i-sliders"/></svg></button>
     <button class="icon-btn" id="helpBtn" aria-label="Aide"><svg class="ico"><use href="#i-info"/></svg></button>
   </div>
   <div class="search-wrap" id="searchContainer" role="search">
@@ -412,6 +440,7 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
     <div class="list single" id="homeRecent"></div>
     <div class="section-head"><h2>Raccourcis</h2></div>
     <div class="shortcuts">
+      <button class="shortcut wide" id="shortcutLearn"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg>Apprendre avec l'IA</button>
       <button class="shortcut" id="shortcutRandom"><img src="assets/icons/d20.png" alt="" width="36" height="36">Note au hasard</button>
       <button class="shortcut" id="shortcutLinks"><img src="assets/icons/link.png" alt="" width="36" height="36">Mes liens</button>
     </div>
@@ -454,6 +483,7 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
 
   <!-- ÉCRANS SECONDAIRES -->
   <section class="screen" id="screenRandom" aria-label="Note au hasard"><div id="randomNoteContent"></div></section>
+  <section class="screen" id="screenLearn" aria-label="Apprendre avec l'IA"><div id="learnContent"></div></section>
   <section class="screen" id="screenLinks" aria-label="Mes liens"><div class="list single" id="linksList"></div></section>
   <section class="screen" id="screenCategoryNotes" aria-label="Notes du thème"><div class="list" id="categoryNotesList"></div></section>
   <section class="screen" id="screenSearch" aria-label="Résultats de recherche"><div class="list" id="searchResultsList"></div></section>
@@ -557,6 +587,43 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
   </form>
 </div></div>
 
+<div class="modal" id="modalSettings" role="dialog" aria-modal="true" aria-labelledby="titleSettings"><div class="modal-content">
+  <div class="modal-header"><h2 class="modal-title" id="titleSettings">Réglages</h2><button class="icon-btn plain" onclick="closeModal('modalSettings')" aria-label="Fermer"><svg class="ico"><use href="#i-close"/></svg></button></div>
+  <div class="help-block">
+    <h3>Assistant IA (Gemini)</h3>
+    <div class="form-group"><label class="form-label" for="setGeminiKey">Clé API Gemini</label><input type="password" class="form-input" id="setGeminiKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <p class="form-hint">Gratuite sur <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>. Elle reste uniquement sur cet appareil.</p></div>
+    <div class="form-group"><label class="form-label" for="setGeminiModel">Modèle</label><input type="text" class="form-input" id="setGeminiModel" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+    <p class="notice">Offre gratuite : Google peut réutiliser les textes envoyés pour améliorer ses produits. N'y mettez rien de confidentiel.</p>
+    <button type="button" class="btn btn-secondary" id="testGeminiBtn">Tester la clé</button>
+  </div>
+  <div class="help-block">
+    <h3>Sauvegarde</h3>
+    <p class="form-hint" id="backupStatus" role="status" style="margin:0 0 var(--sp-3)"></p>
+    <div class="form-group"><label class="form-label" for="setGoogleClientId">Identifiant client Google</label><input type="text" class="form-input" id="setGoogleClientId" placeholder="123…apps.googleusercontent.com" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+    <div class="stack">
+      <button type="button" class="btn btn-primary" id="driveSaveBtn">Sauvegarder sur Google Drive</button>
+      <button type="button" class="btn btn-secondary" id="driveRestoreBtn">Restaurer depuis Google Drive</button>
+      <div class="action-row">
+        <button type="button" class="btn btn-secondary" id="exportBtn">Exporter</button>
+        <button type="button" class="btn btn-secondary" id="importBtn">Importer</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json,.json" hidden aria-label="Fichier de sauvegarde à importer">
+    </div>
+    <details class="setup">
+      <summary>Comment obtenir l'identifiant client Google ?</summary>
+      <ol>
+        <li>Sur <strong>console.cloud.google.com</strong>, créez un projet.</li>
+        <li>« API et services » → « Bibliothèque » : activez <strong>Google Drive API</strong>.</li>
+        <li>« Écran de consentement OAuth » : type « Externe », nom Etchnote, puis ajoutez votre adresse Gmail comme « utilisateur test ».</li>
+        <li>« Identifiants » → « Créer des identifiants » → « ID client OAuth » → « Application Web ». Dans « Origines JavaScript autorisées », ajoutez <strong>https://julien67890.github.io</strong>.</li>
+        <li>Copiez l'identifiant (il finit par <em>.apps.googleusercontent.com</em>) dans le champ ci-dessus.</li>
+      </ol>
+      <p class="form-hint">Seul le fichier « Etchnote - sauvegarde.json » créé par l'application est accessible. Le reste de votre Drive reste invisible pour elle.</p>
+    </details>
+  </div>
+</div></div>
+
 <div class="modal" id="modalHelp" role="dialog" aria-modal="true" aria-labelledby="titleHelp"><div class="modal-content">
   <div class="modal-header"><h2 class="modal-title" id="titleHelp">Aide</h2><button class="icon-btn plain" onclick="closeModal('modalHelp')" aria-label="Fermer"><svg class="ico"><use href="#i-close"/></svg></button></div>
   <div class="help-block"><h3>Répétition espacée</h3>
@@ -589,6 +656,7 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
   </div>
 </div></div>
 
+<script src="services.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
