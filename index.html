@@ -87,11 +87,9 @@ h1,h2,h3{font-family:var(--font-title);font-weight:600;line-height:1.2;color:var
 .splash .orn{width:140px;height:14px;color:var(--copper)}
 @keyframes splashOut{to{opacity:0;visibility:hidden}}
 
-/* ---------- Bandeau mode test (conservé) ---------- */
-.test-banner{position:relative;z-index:10;background:var(--leather);color:#F1D9A6;font-size:11px;font-weight:600;text-align:center;padding:5px 8px;padding-top:calc(5px + var(--safe-t));letter-spacing:0}
 
 /* ---------- En-tête compact ---------- */
-.app-header{position:sticky;top:0;z-index:100;padding:var(--sp-3) var(--sp-4) var(--sp-3);
+.app-header{position:sticky;top:0;z-index:100;padding:calc(var(--sp-3) + var(--safe-t)) var(--sp-4) var(--sp-3);
   background:linear-gradient(180deg,rgba(248,238,220,.97) 0%,rgba(244,229,200,.94) 100%);
   border-bottom:1px solid var(--line-soft)}
 .header-row{display:flex;align-items:center;gap:var(--sp-3);min-height:var(--touch)}
@@ -384,7 +382,6 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
   <p>Organisez vos pensées, cultivez votre mémoire.</p>
 </div>
 
-<div class="test-banner" role="region" aria-label="Mode test">&#9888;&#65039; MODE TEST ACTIVÉ : heures &#8594; secondes | jours &#8594; minutes</div>
 
 <header class="app-header">
   <div class="header-row">
@@ -564,12 +561,11 @@ mark{background:rgba(197,154,91,.45);border-radius:3px;padding:0 2px;color:inher
   <div class="modal-header"><h2 class="modal-title" id="titleHelp">Aide</h2><button class="icon-btn plain" onclick="closeModal('modalHelp')" aria-label="Fermer"><svg class="ico"><use href="#i-close"/></svg></button></div>
   <div class="help-block"><h3>Répétition espacée</h3>
     <p style="margin-bottom:12px;font-size:14px;color:var(--soft)">Etchnote optimise votre mémorisation : chaque note revient à intervalles de plus en plus espacés.</p>
-    <p class="help-note">&#9888;&#65039; MODE TEST actif</p>
     <ul>
-      <li><strong>N1 :</strong> 24 sec <em>(= 24 h)</em></li><li><strong>N2 :</strong> 48 sec <em>(= 48 h)</em></li>
-      <li><strong>N3 :</strong> 7 min <em>(= 7 j)</em></li><li><strong>N4 :</strong> 15 min <em>(= 15 j)</em></li>
-      <li><strong>N5 :</strong> 30 min <em>(= 1 mois)</em></li><li><strong>N6 :</strong> 60 min <em>(= 2 mois)</em></li>
-      <li><strong>N7 :</strong> 120 min <em>(= 4 mois)</em></li><li><strong>N8 :</strong> 180 min <em>(= 6 mois)</em></li>
+      <li><strong>N1 :</strong> 24 h</li><li><strong>N2 :</strong> 48 h</li>
+      <li><strong>N3 :</strong> 7 jours</li><li><strong>N4 :</strong> 15 jours</li>
+      <li><strong>N5 :</strong> 1 mois</li><li><strong>N6 :</strong> 2 mois</li>
+      <li><strong>N7 :</strong> 4 mois</li><li><strong>N8 :</strong> 6 mois</li>
     </ul>
   </div>
   <div class="help-block"><h3>Navigation</h3>

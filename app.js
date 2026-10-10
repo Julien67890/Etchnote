@@ -109,7 +109,7 @@ class DatabaseService {
             niveauRevision: 1,
             dateCreation: new Date().toISOString(),
             dateDerniereLecture: null,
-            dateProchaineRevision: new Date(Date.now() + 24 * 1000).toISOString() // +24 sec (mode test)
+            dateProchaineRevision: new Date(Date.now() + SpacedRepetitionService.INTERVALS[1]).toISOString() // +24 h
         });
     }
 
@@ -224,18 +224,19 @@ class DatabaseService {
 // SPACED REPETITION SERVICE
 // ===========================
 
+const HOUR = 60 * 60 * 1000;
+const DAY = 24 * HOUR;
+
 class SpacedRepetitionService {
-    // ⚠️ MODE TEST : heures → secondes, jours → minutes
-    // (Remettre les vraies valeurs en production)
     static INTERVALS = {
-        1: 24 * 1000,                  // 24 sec  (= 24h en prod)
-        2: 48 * 1000,                  // 48 sec  (= 48h en prod)
-        3: 7 * 60 * 1000,              // 7 min   (= 7 jours en prod)
-        4: 15 * 60 * 1000,             // 15 min  (= 15 jours en prod)
-        5: 30 * 60 * 1000,             // 30 min  (= 1 mois en prod)
-        6: 60 * 60 * 1000,             // 60 min  (= 2 mois en prod)
-        7: 120 * 60 * 1000,            // 120 min (= 4 mois en prod)
-        8: 180 * 60 * 1000             // 180 min (= 6 mois en prod)
+        1: 24 * HOUR,                  // 24 h
+        2: 48 * HOUR,                  // 48 h
+        3: 7 * DAY,                    // 7 jours
+        4: 15 * DAY,                   // 15 jours
+        5: 30 * DAY,                   // 1 mois
+        6: 60 * DAY,                   // 2 mois
+        7: 120 * DAY,                  // 4 mois
+        8: 180 * DAY                   // 6 mois
     };
 
     static markAsRead(note) {
@@ -264,21 +265,19 @@ class SpacedRepetitionService {
         const now = new Date();
         const nextReview = new Date(note.dateProchaineRevision);
         const diff = now - nextReview;
-        // En mode test, on affiche en secondes
-        return Math.floor(diff / 1000);
+        return Math.floor(diff / DAY);
     }
 
     static getLevelLabel(level) {
-        // ⚠️ MODE TEST
         const labels = {
-            1: '24 sec',
-            2: '48 sec',
-            3: '7 min',
-            4: '15 min',
-            5: '30 min',
-            6: '60 min',
-            7: '120 min',
-            8: '180 min'
+            1: '24 h',
+            2: '48 h',
+            3: '7 jours',
+            4: '15 jours',
+            5: '1 mois',
+            6: '2 mois',
+            7: '4 mois',
+            8: '6 mois'
         };
         return labels[level] || '';
     }
@@ -1380,11 +1379,14 @@ class AppController {
                 countdownLevel.textContent = `Niveau ${note.niveauRevision} → ${SpacedRepetitionService.getLevelLabel(note.niveauRevision)}`;
 
                 const totalSec = Math.ceil(remaining / 1000);
-                const h = Math.floor(totalSec / 3600);
+                const d = Math.floor(totalSec / 86400);
+                const h = Math.floor((totalSec % 86400) / 3600);
                 const m = Math.floor((totalSec % 3600) / 60);
                 const s = totalSec % 60;
 
-                if (h > 0) {
+                if (d > 0) {
+                    countdownTimer.textContent = `${d}j ${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m`;
+                } else if (h > 0) {
                     countdownTimer.textContent = `${h}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
                 } else if (m > 0) {
                     countdownTimer.textContent = `${m}m ${String(s).padStart(2, '0')}s`;

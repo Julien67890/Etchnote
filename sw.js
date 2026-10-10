@@ -3,7 +3,7 @@
 // - Code (HTML / JS / JSON) : réseau d'abord, cache en secours (les corrections arrivent tout de suite)
 // - Images et icônes : cache d'abord
 
-const CACHE_NAME = 'etchnote-v5';
+const CACHE_NAME = 'etchnote-v6';
 const urlsToCache = [
   './',
   './index.html',
