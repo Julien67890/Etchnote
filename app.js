@@ -419,6 +419,7 @@ class AppController {
     }
 
     // Navigation
+    navigateTo(screenId) {
         // Stopper le countdown si on quitte la note
         if (this.countdownInterval) {
             clearInterval(this.countdownInterval);
@@ -701,7 +702,6 @@ class AppController {
                     <div class="tc-icons">${svg1}${svg2}</div>
                 </div>
             </div>`;
-        }).join('');
         }).join('');
     }
 
